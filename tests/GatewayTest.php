@@ -2,8 +2,6 @@
 
 namespace Tests;
 
-use DateInterval;
-use DateTime;
 use Futureecom\OmnipayTranzila\Message\AuthorizeRequest;
 use Futureecom\OmnipayTranzila\Message\CaptureRequest;
 use Futureecom\OmnipayTranzila\Message\PurchaseRequest;
@@ -12,22 +10,31 @@ use Futureecom\OmnipayTranzila\TranzilaGateway;
 use Omnipay\Tests\TestCase;
 
 /**
- * Class ChargeGatewayTest
+ * Class GatewayTest
  *
  * @property TranzilaGateway gateway
  */
-class ChargeGatewayTest extends TestCase
+class GatewayTest extends TestCase
 {
+    public function testGatewayName(): void
+    {
+        $this->assertSame('tranzila', $this->gateway->getName());
+    }
+
+    public function testSetSupplier(): void
+    {
+        $supplier = $this->gateway->getSupplier();
+        $this->assertNotSame($supplier, $this->gateway->setSupplier('test2'));
+    }
+
     public function testAuthorize(): void
     {
-        $expDate = $this->expDate('+1 year');
-
         /** @var AuthorizeRequest $request */
         $request = $this->gateway->authorize([
             'ccno' => '4444333322221111',
             'cred_type' => '1',
             'currency' => 'ILS',
-            'expdate' => $expDate,
+            'expdate' => '1234',
             'mycvv' => '333',
             'TranzilaPW' => 'TranzilaPW'
         ]);
@@ -40,21 +47,12 @@ class ChargeGatewayTest extends TestCase
             'ccno' => '4444333322221111',
             'cred_type' => '1',
             'currency' => '1',
-            'expdate' => $expDate,
+            'expdate' => '1234',
             'mycvv' => '333',
             'response_return_format' => 'json',
             'supplier' => 'test',
             'TranzilaPW' => 'TranzilaPW',
         ], $request->getData());
-    }
-
-    /**
-     * @param string $string
-     * @return string
-     */
-    protected function expDate(string $string): string
-    {
-        return (new DateTime())->add(DateInterval::createFromDateString($string))->format('my');
     }
 
     public function testCapture(): void
@@ -77,15 +75,13 @@ class ChargeGatewayTest extends TestCase
 
     public function testPurchase(): void
     {
-        $expDate = $this->expDate('+1 year');
-
         /** @var PurchaseRequest $request */
         $request = $this->gateway->purchase([
             'amount' => '10.00',
             'ccno' => '4444333322221111',
             'cred_type' => '1',
             'currency' => 'ILS',
-            'expdate' => $expDate,
+            'expdate' => '1234',
             'mycvv' => '333',
             'myid' => '12312312',
             'TranzilaPW' => 'TranzilaPW',
@@ -98,7 +94,7 @@ class ChargeGatewayTest extends TestCase
             'ccno' => '4444333322221111',
             'cred_type' => '1',
             'currency' => '1',
-            'expdate' => $expDate,
+            'expdate' => '1234',
             'mycvv' => '333',
             'myid' => '12312312',
             'response_return_format' => 'json',

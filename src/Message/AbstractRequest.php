@@ -161,7 +161,7 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
      */
     public function getExpDate(): ?string
     {
-        if (($card = $this->getCard()) && ($expDate = $this->getExpDate())) {
+        if (($card = $this->getCard()) && ($expDate = $card->getExpiryDate('my'))) {
             return $expDate;
         }
 
