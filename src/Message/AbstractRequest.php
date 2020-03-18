@@ -141,6 +141,10 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
      */
     public function getCcNo(): ?string
     {
+        if (($card = $this->getCard()) && ($number = $card->getNumber())) {
+            return $number;
+        }
+
         return $this->getParameter('ccno');
     }
 
@@ -157,6 +161,10 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
      */
     public function getExpDate(): ?string
     {
+        if (($card = $this->getCard()) && ($expDate = $this->getExpDate())) {
+            return $expDate;
+        }
+
         return $this->getParameter('expdate');
     }
 
@@ -165,6 +173,10 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
      */
     public function getMyCVV(): ?string
     {
+        if (($card = $this->getCard()) && ($cvv = $card->getCvv())) {
+            return $cvv;
+        }
+
         return $this->getParameter('mycvv');
     }
 
@@ -321,27 +333,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @return string|null
-     */
-    public function getTranMode(): ?string
-    {
-        return $this->getParameter('tranmode');
-    }
-
-    /**
-     * @param string|null $value
-     * @return $this
-     */
-    public function setTranMode(string $value): self
-    {
-        if (!in_array($value, ['V', 'F', 'C'], true)) {
-            $value = 'V';
-        }
-
-        return $this->setParameter('tranmode', $value);
-    }
-
-    /**
      * @param string|null $value
      * @return $this
      */
@@ -400,5 +391,54 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     public function setIndex(?string $value): self
     {
         return $this->setParameter('index', $value);
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setSum(?string $value): self
+    {
+        return $this->setAmount($value);
+    }
+
+    /**
+     * @return string|null
+     * @throws InvalidRequestException
+     */
+    public function getSum(): ?string
+    {
+        return $this->getAmount();
+    }
+
+    /**
+     * @param string $value
+     * @return $this
+     */
+    public function setTransactionReference($value): self
+    {
+        if (is_string($value)) {
+            $arr = explode(Response::GLUE, $value);
+
+            if (count($arr) === 2) {
+                $this->setIndex($arr[0])->setAuthNr($arr[1]);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTransactionReference(): ?string
+    {
+        $arr = array_filter([$this->getIndex(), $this->getAuthNr()]);
+
+        if (count($arr) < 2) {
+            return null;
+        }
+
+        return implode(Response::GLUE, $arr);
     }
 }

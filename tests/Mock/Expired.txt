@@ -1,0 +1,30 @@
+HTTP/1.1 200 OK
+Date: Tue, 17 Mar 2020 09:49:43 GMT
+Server: Apache
+Transfer-Encoding: chunked
+Content-Type: application/json
+
+{
+  "DBFsolek": "0",
+  "DBFIsForeign": "0",
+  "DBFcardtype": "2",
+  "DBFcard": "2",
+  "cardtype": "2",
+  "Responsesource": "0",
+  "ConfirmationCode": "0000000",
+  "supplier": "test",
+  "sum": "100",
+  "Tempref": "03410001",
+  "Responseid": "0",
+  "task": "Doverify",
+  "Response": "036",
+  "tz_parent": "test",
+  "ccno": "1111",
+  "index": "28",
+  "cardaquirer": "0",
+  "Responsecvv": "0",
+  "DclickTK": "",
+  "cardissuer": "2",
+  "tranmode": "V",
+  "response_return_format": "json"
+}

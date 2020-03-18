@@ -14,6 +14,8 @@ use stdClass;
  */
 class Response extends AbstractResponse
 {
+    public const GLUE = '-';
+
     /**
      * Response constructor.
      *
@@ -50,10 +52,19 @@ class Response extends AbstractResponse
     }
 
     /**
-     * @inheritDoc
+     * @return string|null
      */
-    public function getTransactionReference()
+    public function getTransactionReference(): ?string
     {
-        return $this->data->ConfirmationCode ?? null;
+        $arr = array_filter([
+            $this->data->index ?? null,
+            $this->data->ConfirmationCode ?? null,
+        ]);
+
+        if (count($arr) < 2) {
+            return null;
+        }
+
+        return implode(self::GLUE, $arr);
     }
 }
