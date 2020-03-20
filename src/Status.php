@@ -10,7 +10,7 @@ class Status
     /**
      * Tranzila statuses.
      */
-    protected const statuses = [
+    protected const STATUSES = [
         '000' => 'Transaction approved',
         '001' => 'Blocked confiscate card.',
         '002' => 'Stolen confiscate card.',
@@ -192,6 +192,6 @@ class Status
      */
     public static function message(?string $code): ?string
     {
-        return $code ? (self::statuses[$code] ?? null) : null;
+        return $code ? (self::STATUSES[$code] ?? null) : null;
     }
 }

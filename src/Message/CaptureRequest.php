@@ -13,7 +13,6 @@ class CaptureRequest extends AbstractRequest
     public function getTransactionData(): array
     {
         return [
-            'authnr' => $this->getAuthNr(),
             'task' => 'Doforce',
             'tranmode' => 'F',
         ];

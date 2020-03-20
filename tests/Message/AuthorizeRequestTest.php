@@ -42,9 +42,7 @@ class AuthorizeRequestTest extends TestCase
 
     public function testSendMessage(): void
     {
-        $response = $this->request->send();
-
-        $this->assertInstanceOf(Response::class, $response);
+        $this->assertInstanceOf(Response::class, $this->request->send());
     }
 
     public function testZeroAmountResponse(): void
@@ -126,9 +124,9 @@ class AuthorizeRequestTest extends TestCase
 
         $this->assertTransaction(
             $response,
-            '30-0000000',
+            '60-0000000',
             'Transaction approved',
-            '004'
+            '000'
         );
     }
 }

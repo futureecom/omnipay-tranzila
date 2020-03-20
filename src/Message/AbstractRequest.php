@@ -2,7 +2,6 @@
 
 namespace Futureecom\OmnipayTranzila\Message;
 
-use Futureecom\OmnipayTranzila\Enums\Currency;
 use Omnipay\Common\Exception\InvalidRequestException;
 use Omnipay\Common\Message\ResponseInterface;
 
@@ -14,7 +13,22 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     /**
      * @var string
      */
-    protected const endpoint = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi';
+    public const GLUE = '-';
+
+    /**
+     * @var string
+     */
+    protected const ENDPOINT = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi';
+
+    /**
+     * @var array
+     */
+    protected static $supportedCurrencies = [
+        'EUR' => 987,
+        'GBP' => 826,
+        'ILS' => 1,
+        'USD' => 2,
+    ];
 
     /**
      * @inheritDoc
@@ -44,7 +58,7 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
      */
     public function getEndpoint(): string
     {
-        return static::endpoint;
+        return static::ENDPOINT;
     }
 
     /**
@@ -126,14 +140,11 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
             return null;
         }
 
-        if (!Currency::isValidKey($currency)) {
-            throw new InvalidRequestException("Unsupported '{$currency}' currency.");
+        if ($code = static::$supportedCurrencies[$currency] ?? false) {
+            return $code;
         }
 
-        /** @var Currency $value */
-        $value = Currency::$currency();
-
-        return (string)$value->getValue();
+        throw new InvalidRequestException("Unsupported '{$currency}' currency.");
     }
 
     /**
@@ -418,7 +429,7 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     public function setTransactionReference($value): self
     {
         if (is_string($value)) {
-            $arr = explode(Response::GLUE, $value);
+            $arr = explode(static::GLUE, $value);
 
             if (count($arr) === 2) {
                 $this->setIndex($arr[0])->setAuthNr($arr[1]);
@@ -439,6 +450,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
             return null;
         }
 
-        return implode(Response::GLUE, $arr);
+        return implode(static::GLUE, $arr);
     }
 }

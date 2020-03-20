@@ -67,7 +67,6 @@ class GatewayTest extends TestCase
         $this->assertEquals([
             'task' => 'Doforce',
             'tranmode' => 'F',
-            'authnr' => 'ConfirmationCode',
             'response_return_format' => 'json',
             'supplier' => 'test',
         ], $request->getData());

@@ -35,9 +35,7 @@ class PurchaseRequestTest extends TestCase
 
     public function testSendMessage(): void
     {
-        $response = $this->request->send();
-
-        $this->assertInstanceOf(Response::class, $response);
+        $this->assertInstanceOf(Response::class, $this->request->send());
     }
 
     public function testInvalidRequest(): void

@@ -14,8 +14,6 @@ use stdClass;
  */
 class Response extends AbstractResponse
 {
-    public const GLUE = '-';
-
     /**
      * Response constructor.
      *
@@ -24,7 +22,7 @@ class Response extends AbstractResponse
      */
     public function __construct(RequestInterface $request, string $data)
     {
-        parent::__construct($request, json_decode($data));
+        parent::__construct($request, json_decode($data, false));
     }
 
     /**
@@ -65,6 +63,6 @@ class Response extends AbstractResponse
             return null;
         }
 
-        return implode(self::GLUE, $arr);
+        return implode(AbstractRequest::GLUE, $arr);
     }
 }

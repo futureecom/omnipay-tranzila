@@ -1,0 +1,11 @@
+HTTP/1.1 200 OK
+Date: Tue, 17 Mar 2020 09:33:13 GMT
+Server: Apache
+Transfer-Encoding: chunked
+Content-Type: application/json
+
+{
+  "error_msg": "Illegal Credit Operation 2",
+  "error_type": "Action",
+  "Response": 20021
+}

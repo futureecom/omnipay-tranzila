@@ -3,10 +3,10 @@
   "description": "TranZila driver for the Omnipay payment processing library.",
   "type": "library",
   "require": {
+    "php": "^7.2",
     "ext-curl": "*",
     "ext-json": "*",
-    "omnipay/common": "^3.0",
-    "myclabs/php-enum": "^1.7"
+    "omnipay/common": "^3.0"
   },
   "require-dev": {
     "omnipay/tests": "^3.1",
