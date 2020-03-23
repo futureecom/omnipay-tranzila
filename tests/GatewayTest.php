@@ -70,6 +70,7 @@ class GatewayTest extends TestCase
             'tranmode' => 'F',
             'response_return_format' => 'json',
             'supplier' => 'test',
+            'authnr' => '00000000'
         ], $request->getData());
     }
 
