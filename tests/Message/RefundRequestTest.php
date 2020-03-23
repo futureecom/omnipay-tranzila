@@ -82,11 +82,10 @@ class RefundRequestTest extends TestCase
         $this->setMockHttpResponse('Refund.txt');
 
         $response = $this->request->setAmount('100')
-            ->setTransactionReference('0000000')
+            ->setTransactionReference('51-0000000')
             ->setCurrency('ILS')
             ->setCredType('1')
             ->setCcNo('12312312')
-            ->setIndex('51')
             ->send();
 
         $this->assertTransaction(

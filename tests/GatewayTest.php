@@ -6,6 +6,7 @@ use Futureecom\OmnipayTranzila\Message\AuthorizeRequest;
 use Futureecom\OmnipayTranzila\Message\CaptureRequest;
 use Futureecom\OmnipayTranzila\Message\PurchaseRequest;
 use Futureecom\OmnipayTranzila\Message\RefundRequest;
+use Futureecom\OmnipayTranzila\Message\VoidRequest;
 use Futureecom\OmnipayTranzila\TranzilaGateway;
 use Omnipay\Tests\TestCase;
 
@@ -59,7 +60,7 @@ class GatewayTest extends TestCase
     {
         /** @var CaptureRequest $request */
         $request = $this->gateway->capture([
-            'authnr' => 'ConfirmationCode'
+            'authnr' => '00000000'
         ]);
 
         $this->assertInstanceOf(CaptureRequest::class, $request);
@@ -108,7 +109,7 @@ class GatewayTest extends TestCase
         /** @var RefundRequest $request */
         $request = $this->gateway->refund([
             'index' => 10,
-            'authnr' => 'ConfirmationCode',
+            'authnr' => '00000000',
             'cred_type' => '1',
             'myid' => '12312312',
         ]);
@@ -116,12 +117,29 @@ class GatewayTest extends TestCase
         $this->assertInstanceOf(RefundRequest::class, $request);
 
         $this->assertEquals([
-            'authnr' => 'ConfirmationCode',
+            'authnr' => '00000000',
             'tranmode' => 'C10',
             'cred_type' => '1',
             'myid' => '12312312',
             'response_return_format' => 'json',
             'supplier' => 'test',
+        ], $request->getData());
+    }
+
+    public function testVoid(): void
+    {
+        $request = $this->gateway->void([
+            'index' => '78',
+            'authnr' => '00000000',
+        ]);
+
+        $this->assertInstanceOf(VoidRequest::class, $request);
+
+        $this->assertEquals([
+            'response_return_format' => 'json',
+            'authnr' => '00000000',
+            'supplier' => 'test',
+            'tranmode' => 'D78',
         ], $request->getData());
     }
 

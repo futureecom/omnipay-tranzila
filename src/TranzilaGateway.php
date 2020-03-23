@@ -6,6 +6,7 @@ use Futureecom\OmnipayTranzila\Message\AuthorizeRequest;
 use Futureecom\OmnipayTranzila\Message\CaptureRequest;
 use Futureecom\OmnipayTranzila\Message\PurchaseRequest;
 use Futureecom\OmnipayTranzila\Message\RefundRequest;
+use Futureecom\OmnipayTranzila\Message\VoidRequest;
 use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\Message\RequestInterface;
 
@@ -72,6 +73,14 @@ class TranzilaGateway extends AbstractGateway
     public function refund(array $options = []): RequestInterface
     {
         return $this->createRequest(RefundRequest::class, $options);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function void(array $options = array()): RequestInterface
+    {
+        return $this->createRequest(VoidRequest::class, $options);
     }
 
     /**

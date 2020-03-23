@@ -124,6 +124,8 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
             'spay' => $this->getSpay(),
 
             // others...
+            'authnr' => $this->getAuthNr(),
+            'CreditPass' => $this->getCreditPass(),
             'myid' => $this->getMyID(),
             'supplier' => $this->getSupplier(),
             'TranzilaPW' => $this->getTranzilaPW(),
@@ -213,6 +215,22 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     public function getSpay(): ?string
     {
         return $this->getParameter('spay');
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAuthNr(): ?string
+    {
+        return $this->getParameter('authnr');
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCreditPass(): ?string
+    {
+        return $this->getParameter('CreditPass');
     }
 
     /**
@@ -371,40 +389,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @return string|null
-     */
-    public function getAuthNr(): ?string
-    {
-        return $this->getParameter('authnr');
-    }
-
-    /**
-     * @param string|null $value
-     * @return $this
-     */
-    public function setAuthNr(?string $value): self
-    {
-        return $this->setParameter('authnr', $value);
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getIndex(): ?string
-    {
-        return $this->getParameter('index');
-    }
-
-    /**
-     * @param string|null $value
-     * @return $this
-     */
-    public function setIndex(?string $value): self
-    {
-        return $this->setParameter('index', $value);
-    }
-
-    /**
      * @param string|null $value
      * @return $this
      */
@@ -440,6 +424,24 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setAuthNr(?string $value): self
+    {
+        return $this->setParameter('authnr', $value);
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setIndex(?string $value): self
+    {
+        return $this->setParameter('index', $value);
+    }
+
+    /**
      * @return string|null
      */
     public function getTransactionReference(): ?string
@@ -451,5 +453,22 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         }
 
         return implode(static::GLUE, $arr);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getIndex(): ?string
+    {
+        return $this->getParameter('index');
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setCreditPass(?string $value): self
+    {
+        return $this->setParameter('CreditPass', $value);
     }
 }

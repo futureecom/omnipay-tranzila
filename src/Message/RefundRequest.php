@@ -14,7 +14,6 @@ class RefundRequest extends AbstractRequest
     {
         return [
             'tranmode' => "C{$this->getIndex()}",
-            'authnr' => $this->getAuthNr(),
         ];
     }
 }
