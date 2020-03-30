@@ -1,7 +1,8 @@
 <?php
 
-namespace Futureecom\OmnipayTranzila\Message;
+namespace Futureecom\OmnipayTranzila\Message\Responses;
 
+use Futureecom\OmnipayTranzila\Message\Requests\AbstractRequest;
 use Futureecom\OmnipayTranzila\Status;
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\RequestInterface;
@@ -18,9 +19,9 @@ class Response extends AbstractResponse
      * Response constructor.
      *
      * @param RequestInterface $request
-     * @param string $data
+     * @param string|null $data
      */
-    public function __construct(RequestInterface $request, string $data)
+    public function __construct(RequestInterface $request, ?string $data)
     {
         parent::__construct($request, json_decode($data, false));
     }

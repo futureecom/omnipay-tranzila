@@ -2,6 +2,7 @@
 
 namespace Tests\Concerns;
 
+use Omnipay\Common\Message\RedirectResponseInterface;
 use Omnipay\Common\Message\ResponseInterface;
 use PHPUnit\Framework\Assert;
 
@@ -18,6 +19,7 @@ trait TransactionStatus
      * @param bool $isSuccess
      * @param bool $isRedirect
      * @param bool $isCancelled
+     * @param string|null $redirectUrl
      */
     protected function assertTransaction(
         ResponseInterface $response,
@@ -26,14 +28,35 @@ trait TransactionStatus
         ?string $code,
         bool $isSuccess = true,
         bool $isRedirect = false,
-        bool $isCancelled = false
+        bool $isCancelled = false,
+        ?string $redirectUrl = null
     )
     {
-        Assert::assertSame($reference, $response->getTransactionReference());
-        Assert::assertSame($message, $response->getMessage());
-        Assert::assertSame($code, $response->getCode());
-        Assert::assertSame($isSuccess, $response->isSuccessful());
-        Assert::assertSame($isRedirect, $response->isRedirect());
-        Assert::assertSame($isCancelled, $response->isCancelled());
+        Assert::assertEquals([
+            'cancelled' => $isCancelled,
+            'code' => $code,
+            'message' => $message,
+            'redirect' => $isRedirect,
+            'redirect_url' => $redirectUrl,
+            'success' => $isSuccess,
+            'transaction_reference' => $reference,
+        ], [
+            'cancelled' => $response->isCancelled(),
+            'code' => $response->getCode(),
+            'message' => $response->getMessage(),
+            'redirect' => $response->isRedirect(),
+            'redirect_url' => $this->getRedirectUrlFromResponse($response),
+            'success' => $response->isSuccessful(),
+            'transaction_reference' => $response->getTransactionReference(),
+        ]);
+    }
+
+    /**
+     * @param ResponseInterface $response
+     * @return string|null
+     */
+    private function getRedirectUrlFromResponse(ResponseInterface $response): ?string
+    {
+        return $response instanceof RedirectResponseInterface ? $response->getRedirectUrl() : null;
     }
 }

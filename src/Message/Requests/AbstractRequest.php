@@ -1,8 +1,11 @@
 <?php
 
-namespace Futureecom\OmnipayTranzila\Message;
+namespace Futureecom\OmnipayTranzila\Message\Requests;
 
+use Futureecom\OmnipayTranzila\Message\Responses\RedirectResponse;
+use Futureecom\OmnipayTranzila\Message\Responses\Response;
 use Omnipay\Common\Exception\InvalidRequestException;
+use Omnipay\Common\Message\RedirectResponseInterface;
 use Omnipay\Common\Message\ResponseInterface;
 
 /**
@@ -87,6 +90,201 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     protected function createResponse(string $content): ResponseInterface
     {
         return $this->response = new Response($this, $content);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAddress(): ?string
+    {
+        return $this->getParameter('address');
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setAddress(?string $value): self
+    {
+        return $this->setParameter('address', $value);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCity(): ?string
+    {
+        return $this->getParameter('city');
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setCity(?string $value): self
+    {
+        return $this->setParameter('city', $value);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCompany(): ?string
+    {
+        return $this->getParameter('company');
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setCompany(?string $value): self
+    {
+        return $this->setParameter('company', $value);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getContact(): ?string
+    {
+        return $this->getParameter('contact');
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setContact(?string $value): self
+    {
+        return $this->setParameter('contact', $value);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getEmail(): ?string
+    {
+        return $this->getParameter('email');
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setEmail(?string $value): self
+    {
+        return $this->setParameter('email', $value);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getFax(): ?string
+    {
+        return $this->getParameter('fax');
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setFax(?string $value): self
+    {
+        return $this->setParameter('fax', $value);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getOldPrice(): ?string
+    {
+        return $this->getParameter('oldprice');
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setOldPrice(?string $value): self
+    {
+        return $this->setParameter('oldprice', $value);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPDesc(): ?string
+    {
+        return $this->getParameter('pdesc');
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setPDesc(?string $value): self
+    {
+        return $this->setParameter('pdesc', $value);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPhone(): ?string
+    {
+        return $this->getParameter('phone');
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setPhone(?string $value): self
+    {
+        return $this->setParameter('phone', $value);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRemarks(): ?string
+    {
+        return $this->getParameter('remarks');
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setRemarks(?string $value): self
+    {
+        return $this->setParameter('remarks', $value);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTranzilaToken(): ?string
+    {
+        return $this->getTranzilaTK();
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setTranzilaToken(?string $value): self
+    {
+        return $this->setTranzilaTK($value);
+    }
+
+    /**
+     * @return RedirectResponseInterface
+     */
+    protected function createRedirectResponse(): RedirectResponseInterface
+    {
+        return $this->response = new RedirectResponse($this);
     }
 
     /**
@@ -470,5 +668,21 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     public function setCreditPass(?string $value): self
     {
         return $this->setParameter('CreditPass', $value);
+    }
+
+    /**
+     * @param string ...$keys
+     * @return bool
+     * @noinspection PhpDocSignatureInspection
+     */
+    public function hasParameters(string ...$keys): bool
+    {
+        foreach ($keys as $key) {
+            if (!$this->getParameter($key)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

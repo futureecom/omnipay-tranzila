@@ -1,6 +1,6 @@
 <?php
 
-namespace Futureecom\OmnipayTranzila\Message;
+namespace Futureecom\OmnipayTranzila\Message\Requests;
 
 /**
  * Class PurchaseRequest

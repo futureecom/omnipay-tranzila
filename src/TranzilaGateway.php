@@ -2,11 +2,11 @@
 
 namespace Futureecom\OmnipayTranzila;
 
-use Futureecom\OmnipayTranzila\Message\AuthorizeRequest;
-use Futureecom\OmnipayTranzila\Message\CaptureRequest;
-use Futureecom\OmnipayTranzila\Message\PurchaseRequest;
-use Futureecom\OmnipayTranzila\Message\RefundRequest;
-use Futureecom\OmnipayTranzila\Message\VoidRequest;
+use Futureecom\OmnipayTranzila\Message\Requests\AuthorizeRequest;
+use Futureecom\OmnipayTranzila\Message\Requests\CaptureRequest;
+use Futureecom\OmnipayTranzila\Message\Requests\PurchaseRequest;
+use Futureecom\OmnipayTranzila\Message\Requests\RefundRequest;
+use Futureecom\OmnipayTranzila\Message\Requests\VoidRequest;
 use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\Message\RequestInterface;
 

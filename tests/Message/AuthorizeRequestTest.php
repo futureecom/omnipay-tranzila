@@ -2,8 +2,8 @@
 
 namespace Tests\Message;
 
-use Futureecom\OmnipayTranzila\Message\AuthorizeRequest;
-use Futureecom\OmnipayTranzila\Message\Response;
+use Futureecom\OmnipayTranzila\Message\Requests\AuthorizeRequest;
+use Futureecom\OmnipayTranzila\Message\Responses\Response;
 use Omnipay\Tests\TestCase;
 use Tests\Concerns\TransactionStatus;
 
@@ -49,7 +49,10 @@ class AuthorizeRequestTest extends TestCase
     {
         $this->setMockHttpResponse('AmountZero.txt');
 
-        $response = $this->request->send();
+        $response = $this->request->setCcNo('112233')
+            ->setMyCVV('123')
+            ->setExpDate('12-39')
+            ->send();
 
         $this->assertTransaction(
             $response,
@@ -60,27 +63,14 @@ class AuthorizeRequestTest extends TestCase
         );
     }
 
-    public function testCardNumberNotFoundOrFoundTwice(): void
-    {
-        $this->setMockHttpResponse('CardNumberNotFoundOrFoundTwice.txt');
-
-        $response = $this->request->setAmount('100')->send();
-
-        $this->assertTransaction(
-            $response,
-            '27-0000000',
-            'Card number not found or found twice',
-            '061',
-            false
-        );
-    }
-
     public function testCardExpired(): void
     {
         $this->setMockHttpResponse('Expired.txt');
 
         $response = $this->request->setAmount('100')
             ->setCcNo('4444333322221111')
+            ->setMyCVV('123')
+            ->setExpDate('12-20')
             ->send();
 
         $this->assertTransaction(
@@ -99,6 +89,7 @@ class AuthorizeRequestTest extends TestCase
         $response = $this->request->setAmount('100')
             ->setCcNo('4444333322221111')
             ->setExpDate('1225')
+            ->setMyCVV('122')
             ->send();
 
         $this->assertTransaction(
@@ -127,6 +118,24 @@ class AuthorizeRequestTest extends TestCase
             '60-0000000',
             'Transaction approved',
             '000'
+        );
+    }
+
+    public function testAuthorizeWithRedirect(): void
+    {
+        $response = $this->request->setAmount('100')
+            ->setCurrency('ILS')
+            ->send();
+
+        $this->assertTransaction(
+            $response,
+            null,
+            null,
+            null,
+            false,
+            true,
+            false,
+            'https://direct.tranzila.com/test/iframe.php?currency=1&sum=100.00'
         );
     }
 }

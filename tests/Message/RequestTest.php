@@ -2,7 +2,7 @@
 
 namespace Tests\Message;
 
-use Futureecom\OmnipayTranzila\Message\AbstractRequest;
+use Futureecom\OmnipayTranzila\Message\Requests\AbstractRequest;
 use Omnipay\Common\CreditCard;
 use Omnipay\Common\Exception\InvalidRequestException;
 use Omnipay\Tests\TestCase;
@@ -17,7 +17,7 @@ class RequestTest extends TestCase
      */
     private $request;
 
-    public function testSetParameteres(): void
+    public function testSetParameters(): void
     {
         $this->request->setSupplier('test')
             ->setCurrency('USD')
@@ -140,6 +140,44 @@ class RequestTest extends TestCase
         $this->assertSame('1000', $this->request->getFpay());
         $this->assertSame('200', $this->request->getNpay());
         $this->assertSame('400', $this->request->getSpay());
+    }
+
+    public function testSetRedirectParameters(): void
+    {
+        $this->request
+            ->setSum('8')
+            ->setPDesc('Product description.')
+            ->setContact('John Doe')
+            ->setCompany('FutureEcom')
+            ->setEmail('contact@example.com')
+            ->setPhone('+00-1234-1234-1234')
+            ->setFax('+00-1234-1234-1236')
+            ->setAddress('123 Main Street')
+            ->setCity('New York')
+            ->setRemarks('glass')
+            ->setTranzilaToken('ZUC9EVLk9fFVQx7c')
+            ->setCurrency('ILS')
+            ->setMyID('123456')
+            ->setCredType('1')
+            ->setOldPrice('10');
+
+        $this->assertEquals([
+            'amount' => '8',
+            'pdesc' => 'Product description.',
+            'contact' => 'John Doe',
+            'company' => 'FutureEcom',
+            'email' => 'contact@example.com',
+            'phone' => '+00-1234-1234-1234',
+            'fax' => '+00-1234-1234-1236',
+            'address' => '123 Main Street',
+            'city' => 'New York',
+            'remarks' => 'glass',
+            'TranzilaTK' => 'ZUC9EVLk9fFVQx7c',
+            'currency' => 'ILS',
+            'myid' => '123456',
+            'cred_type' => '1',
+            'oldprice' => '10',
+        ], $this->request->getParameters());
     }
 
     /**

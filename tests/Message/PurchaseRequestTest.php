@@ -2,8 +2,8 @@
 
 namespace Tests\Message;
 
-use Futureecom\OmnipayTranzila\Message\PurchaseRequest;
-use Futureecom\OmnipayTranzila\Message\Response;
+use Futureecom\OmnipayTranzila\Message\Requests\PurchaseRequest;
+use Futureecom\OmnipayTranzila\Message\Responses\Response;
 use Omnipay\Tests\TestCase;
 use Tests\Concerns\TransactionStatus;
 
