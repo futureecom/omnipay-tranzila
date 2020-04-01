@@ -4,6 +4,7 @@ namespace Futureecom\OmnipayTranzila;
 
 use Futureecom\OmnipayTranzila\Message\Requests\AuthorizeRequest;
 use Futureecom\OmnipayTranzila\Message\Requests\CaptureRequest;
+use Futureecom\OmnipayTranzila\Message\Requests\CompletePurchaseRequest;
 use Futureecom\OmnipayTranzila\Message\Requests\PurchaseRequest;
 use Futureecom\OmnipayTranzila\Message\Requests\RefundRequest;
 use Futureecom\OmnipayTranzila\Message\Requests\VoidRequest;
@@ -32,6 +33,7 @@ class TranzilaGateway extends AbstractGateway
     {
         return [
             'supplier' => $this->getSupplier(),
+            'passw' => $this->getPassW(),
         ];
     }
 
@@ -41,6 +43,14 @@ class TranzilaGateway extends AbstractGateway
     public function getSupplier(): ?string
     {
         return $this->getParameter('supplier');
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPassW(): ?string
+    {
+        return $this->getParameter('passw');
     }
 
     /**
@@ -57,6 +67,14 @@ class TranzilaGateway extends AbstractGateway
     public function capture(array $options = []): RequestInterface
     {
         return $this->createRequest(CaptureRequest::class, $options);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function completePurchase(array $options = []): RequestInterface
+    {
+        return $this->createRequest(CompletePurchaseRequest::class, $options);
     }
 
     /**
@@ -90,5 +108,14 @@ class TranzilaGateway extends AbstractGateway
     public function setSupplier(?string $value): self
     {
         return $this->setParameter('supplier', $value);
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setPassW(?string $value): self
+    {
+        return $this->setParameter('passw', $value);
     }
 }

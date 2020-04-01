@@ -27,10 +27,10 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
      * @var array
      */
     protected static $supportedCurrencies = [
-        'EUR' => 987,
-        'GBP' => 826,
-        'ILS' => 1,
-        'USD' => 2,
+        'EUR' => '987',
+        'GBP' => '826',
+        'ILS' => '1',
+        'USD' => '2',
     ];
 
     /**
@@ -78,7 +78,7 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
      * @param array $data
      * @return string
      */
-    protected function prepareBody(array $data)
+    protected function prepareBody(array $data): string
     {
         return http_build_query($data, '', '&');
     }
@@ -90,6 +90,23 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     protected function createResponse(string $content): ResponseInterface
     {
         return $this->response = new Response($this, $content);
+    }
+
+    /**
+     * @param string $value
+     * @return $this
+     */
+    public function setCurrency($value): self
+    {
+        if ($value !== null) {
+            $value = strtoupper($value);
+        }
+
+        if ($currency = array_search($value, static::$supportedCurrencies, true)) {
+            $value = $currency;
+        }
+
+        return $this->setParameter('currency', $value);
     }
 
     /**

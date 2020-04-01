@@ -4,6 +4,7 @@ namespace Tests;
 
 use Futureecom\OmnipayTranzila\Message\Requests\AuthorizeRequest;
 use Futureecom\OmnipayTranzila\Message\Requests\CaptureRequest;
+use Futureecom\OmnipayTranzila\Message\Requests\CompletePurchaseRequest;
 use Futureecom\OmnipayTranzila\Message\Requests\PurchaseRequest;
 use Futureecom\OmnipayTranzila\Message\Requests\RefundRequest;
 use Futureecom\OmnipayTranzila\Message\Requests\VoidRequest;
@@ -72,6 +73,19 @@ class GatewayTest extends TestCase
             'supplier' => 'test',
             'authnr' => '00000000'
         ], $request->getData());
+    }
+
+    public function testCompletePurchase(): void
+    {
+        /** @var CompletePurchaseRequest $request */
+        $request = $this->gateway->completePurchase([
+            'ConfirmationCode' => '0000000',
+            'Index' => '94',
+            'Response' => '000',
+            'TranzilaToken' => 'ZUC9EVLk9fFVQx7c',
+        ]);
+
+        $this->assertInstanceOf(CompletePurchaseRequest::class, $request);
     }
 
     public function testPurchase(): void
