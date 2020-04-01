@@ -16,12 +16,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     /**
      * @var string
      */
-    public const GLUE = '-';
+    protected const ENDPOINT = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi';
 
     /**
      * @var string
      */
-    protected const ENDPOINT = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi';
+    public const GLUE = '-';
 
     /**
      * @var array
@@ -72,24 +72,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return [
             'content-type' => 'application/x-www-form-urlencoded',
         ];
-    }
-
-    /**
-     * @param array $data
-     * @return string
-     */
-    protected function prepareBody(array $data): string
-    {
-        return http_build_query($data, '', '&');
-    }
-
-    /**
-     * @param string $content
-     * @return ResponseInterface
-     */
-    protected function createResponse(string $content): ResponseInterface
-    {
-        return $this->response = new Response($this, $content);
     }
 
     /**
@@ -297,54 +279,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @return RedirectResponseInterface
-     */
-    protected function createRedirectResponse(): RedirectResponseInterface
-    {
-        return $this->response = new RedirectResponse($this);
-    }
-
-    /**
      * @inheritDoc
      * @throws InvalidRequestException
      */
     public function getData(): array
     {
         return array_merge($this->getDefaultParameters(), $this->getTransactionData());
-    }
-
-    /**
-     * @return array
-     * @throws InvalidRequestException
-     */
-    protected function getDefaultParameters(): array
-    {
-        return array_filter([
-            // response format
-            'response_return_format' => 'json',
-
-            // basic transaction data
-            'currency' => $this->getCurrencyCode(),
-            'sum' => $this->getAmount(),
-
-            // credit card data
-            'ccno' => $this->getCcNo(),
-            'cred_type' => $this->getCredType(),
-            'expdate' => $this->getExpDate(),
-            'mycvv' => $this->getMyCVV(),
-
-            // transaction with installments
-            'fpay' => $this->getFpay(),
-            'npay' => $this->getNpay(),
-            'spay' => $this->getSpay(),
-
-            // others...
-            'authnr' => $this->getAuthNr(),
-            'CreditPass' => $this->getCreditPass(),
-            'myid' => $this->getMyID(),
-            'supplier' => $this->getSupplier(),
-            'TranzilaPW' => $this->getTranzilaPW(),
-        ]);
     }
 
     /**
@@ -471,13 +411,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     {
         return $this->getParameter('TranzilaPW');
     }
-
-    /**
-     * Return transaction data specified to given transaction.
-     *
-     * @return array
-     */
-    abstract protected function getTransactionData(): array;
 
     /**
      * @param string|null $value
@@ -702,4 +635,89 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
 
         return true;
     }
+
+    /**
+     * @return string|null
+     */
+    public function getOrderId(): ?string
+    {
+        return $this->getParameter('orderId');
+    }
+
+    /**
+     * @param string|null $value
+     * @return self
+     */
+    public function setOrderId(?string $value): self
+    {
+        return $this->setParameter('orderId', $value);
+    }
+
+    /**
+     * @param array $data
+     * @return string
+     */
+    protected function prepareBody(array $data): string
+    {
+        return http_build_query($data, '', '&');
+    }
+
+    /**
+     * @param string $content
+     * @return ResponseInterface
+     */
+    protected function createResponse(string $content): ResponseInterface
+    {
+        return $this->response = new Response($this, $content);
+    }
+
+    /**
+     * @return RedirectResponseInterface
+     */
+    protected function createRedirectResponse(): RedirectResponseInterface
+    {
+        return $this->response = new RedirectResponse($this);
+    }
+
+    /**
+     * @return array
+     * @throws InvalidRequestException
+     */
+    protected function getDefaultParameters(): array
+    {
+        return array_filter([
+            // response format
+            'response_return_format' => 'json',
+
+            // basic transaction data
+            'currency' => $this->getCurrencyCode(),
+            'orderId' => $this->getOrderId(),
+            'sum' => $this->getAmount(),
+
+            // credit card data
+            'ccno' => $this->getCcNo(),
+            'cred_type' => $this->getCredType(),
+            'expdate' => $this->getExpDate(),
+            'mycvv' => $this->getMyCVV(),
+
+            // transaction with installments
+            'fpay' => $this->getFpay(),
+            'npay' => $this->getNpay(),
+            'spay' => $this->getSpay(),
+
+            // others...
+            'authnr' => $this->getAuthNr(),
+            'CreditPass' => $this->getCreditPass(),
+            'myid' => $this->getMyID(),
+            'supplier' => $this->getSupplier(),
+            'TranzilaPW' => $this->getTranzilaPW(),
+        ]);
+    }
+
+    /**
+     * Return transaction data specified to given transaction.
+     *
+     * @return array
+     */
+    abstract protected function getTransactionData(): array;
 }

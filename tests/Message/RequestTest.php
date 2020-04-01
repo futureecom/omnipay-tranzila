@@ -27,7 +27,8 @@ class RequestTest extends TestCase
             ->setAmount('1000')
             ->setExpDate('4567')
             ->setMyID('3489')
-            ->setCreditPass('qwerty');
+            ->setCreditPass('qwerty')
+            ->setOrderId('HJd8lxLdVLSzNihY');
 
         $this->assertEquals([
             'supplier' => 'test',
@@ -39,6 +40,7 @@ class RequestTest extends TestCase
             'expdate' => '4567',
             'myid' => '3489',
             'CreditPass' => 'qwerty',
+            'orderId' => 'HJd8lxLdVLSzNihY',
         ], $this->request->getParameters());
 
         $this->request->setTransactionReference('555-80000001');

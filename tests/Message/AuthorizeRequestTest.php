@@ -135,7 +135,7 @@ class AuthorizeRequestTest extends TestCase
             false,
             true,
             false,
-            'https://direct.tranzila.com/test/iframe.php?currency=1&sum=100.00'
+            'https://direct.tranzila.com/test/iframe.php?tranmode=VK&TranzilaTK=1&currency=1&sum=100.00'
         );
     }
 }

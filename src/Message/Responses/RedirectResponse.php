@@ -34,7 +34,7 @@ class RedirectResponse extends Response implements RedirectResponseInterface
     /**
      * @inheritDoc
      */
-    public function isRedirect()
+    public function isRedirect(): bool
     {
         return true;
     }
@@ -55,6 +55,8 @@ class RedirectResponse extends Response implements RedirectResponseInterface
     private function getUrlParams(): string
     {
         $params = array_filter([
+            'tranmode' => 'VK',
+            'TranzilaTK' => '1',
             'address' => $this->request->getAddress(),
             'city' => $this->request->getCity(),
             'company' => $this->request->getCompany(),
@@ -65,11 +67,11 @@ class RedirectResponse extends Response implements RedirectResponseInterface
             'fax' => $this->request->getFax(),
             'myid' => $this->request->getMyID(),
             'oldprice' => $this->request->getOldPrice(),
+            'orderId' => $this->request->getOrderId(),
             'pdesc' => $this->request->getPDesc(),
             'phone' => $this->request->getPhone(),
             'remarks' => $this->request->getRemarks(),
             'sum' => $this->request->getSum(),
-            'TranzilaToken' => $this->request->getTranzilaToken(),
         ]);
 
         return http_build_query($params, '', '&');
