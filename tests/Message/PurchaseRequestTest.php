@@ -73,7 +73,7 @@ class PurchaseRequestTest extends TestCase
         $this->setMockHttpResponse('Purchase.txt');
 
         $response = $this->request->setAmount('100')
-            ->setCcNo('123412312')
+            ->setCcNo('12312312')
             ->setExpDate('1234')
             ->setCredType('1')
             ->setMyCVV('1234')
