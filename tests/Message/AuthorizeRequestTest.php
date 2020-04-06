@@ -123,8 +123,9 @@ class AuthorizeRequestTest extends TestCase
 
     public function testAuthorizeWithRedirect(): void
     {
-        $response = $this->request->setAmount('100')
+        $response = $this->request->setAmount('1')
             ->setCurrency('ILS')
+            ->setOrderId('d6d98b88-c866-4496-9bd4-de7ba48d0f52')
             ->send();
 
         $this->assertTransaction(
@@ -135,7 +136,7 @@ class AuthorizeRequestTest extends TestCase
             false,
             true,
             false,
-            'https://direct.tranzila.com/test/iframe.php?tranmode=VK&TranzilaTK=1&currency=1&sum=100.00'
+            'https://direct.tranzila.com/test/iframe.php?tranmode=VK&TranzilaTK=1&currency=1&orderId=d6d98b88-c866-4496-9bd4-de7ba48d0f52&sum=1.00'
         );
     }
 }

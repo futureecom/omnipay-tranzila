@@ -17,6 +17,13 @@ class RequestTest extends TestCase
      */
     private $request;
 
+    public function testSetCurrencyParameter(): void
+    {
+        $this->request->setCurrency('1');
+        $this->assertEquals('ILS', $this->request->getCurrency());
+        $this->assertEquals('1', $this->request->getCurrencyCode());
+    }
+
     public function testSetParameters(): void
     {
         $this->request->setSupplier('test')
@@ -123,6 +130,7 @@ class RequestTest extends TestCase
         ], $this->request->getParameters());
 
         $this->assertSame('TK', $this->request->getTranzilaTK());
+        $this->assertSame('TK', $this->request->getTranzilaToken());
         $this->assertSame('PK', $this->request->getTranzilaPK());
         $this->assertSame('PW', $this->request->getTranzilaPW());
     }
