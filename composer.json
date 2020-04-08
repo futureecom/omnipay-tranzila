@@ -1,0 +1,29 @@
+{
+  "name": "futureecom/omnipay-tranzila",
+  "description": "TranZila driver for the Omnipay payment processing library.",
+  "type": "library",
+  "require": {
+    "php": "^7.2",
+    "ext-curl": "*",
+    "ext-json": "*",
+    "omnipay/common": "^3.0"
+  },
+  "require-dev": {
+    "omnipay/tests": "^3.1",
+    "symfony/var-dumper": "^5.0",
+    "symplify/easy-coding-standard": "^7.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Futureecom\\OmnipayTranzila\\": "src/",
+      "Tests\\": "tests/"
+    }
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Maciej Kozlowski",
+      "email": "maciej@futureecom.com"
+    }
+  ]
+}
