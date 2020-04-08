@@ -10,7 +10,8 @@
   },
   "require-dev": {
     "omnipay/tests": "^3.1",
-    "symfony/var-dumper": "^5.0"
+    "symfony/var-dumper": "^5.0",
+    "symplify/easy-coding-standard": "^7.2"
   },
   "autoload": {
     "psr-4": {
