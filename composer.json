@@ -1,9 +1,18 @@
 {
   "name": "futureecom/omnipay-tranzila",
   "description": "TranZila driver for the Omnipay payment processing library.",
+  "keywords": [
+    "gateway",
+    "merchant",
+    "omnipay",
+    "pay",
+    "payment",
+    "tranzila"
+  ],
   "type": "library",
+  "homepage": "https://futureecom.com",
   "require": {
-    "php": "^7.2",
+    "php": "^7.2 || ^7.3 || ^7.4",
     "ext-curl": "*",
     "ext-json": "*",
     "omnipay/common": "^3.0"
