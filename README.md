@@ -2,7 +2,7 @@
 
 **Tranzila driver for the Omnipay PHP payment processing library**
 
-[![Build Status](https://travis-ci.org/futureecom/omnipay-tranzila.png?branch=master)](https://travis-ci.org/futureecom/omnipay-tranzila)
+![Build](https://github.com/futureecom/omnipay-tranzila/workflows/Build/badge.svg?branch=master) 
 [![Latest Stable Version](https://poser.pugx.org/futureecom/omnipay-tranzila/version.png)](https://packagist.org/packages/futureecom/omnipay-tranzila)
 [![Total Downloads](https://poser.pugx.org/futureecom/omnipay-tranzila/d/total.png)](https://packagist.org/packages/futureecom/omnipay-tranzila)
 
