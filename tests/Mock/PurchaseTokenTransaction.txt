@@ -1,33 +1,31 @@
 HTTP/1.1 200 OK
-Date: Tue, 17 Mar 2020 12:01:17 GMT
+Date: Tue, 24 Dec 2021 10:01:17 GMT
 Server: Apache
 Transfer-Encoding: chunked
 Content-Type: application/json
 
 {
-  "mycvv": "0",
   "DBFsolek": "1",
   "DBFIsForeign": "0",
-  "DBFcardtype": "2",
+  "DBFcardtype": "6",
   "DBFcard": "2",
   "currency": "1",
   "cardtype": "2",
-  "Responsesource": "2",
+  "Responsesource": "1",
   "ConfirmationCode": "0000000",
   "supplier": "test",
-  "expdate": "0825",
-  "sum": "1",
-  "Tempref": "90480001",
-  "Responseid": "3",
+  "expdate": "0924",
+  "sum": "0.10",
+  "Tempref": "01001002",
+  "Responseid": "0",
+  "TranzilaTK": "Od3df2079abc0894111",
   "Response": "000",
   "tz_parent": "test",
-  "cred_type": "1",
-  "ccno": "0000",
-  "index": "60",
+  "index": "42",
   "cardaquirer": "1",
-  "Responsecvv": "1",
+  "Responsecvv": "0",
   "DclickTK": "",
-  "cardissuer": "2",
-  "tranmode": "V",
+  "cardissuer": "6",
+  "tranmode": "A",
   "response_return_format": "json"
 }

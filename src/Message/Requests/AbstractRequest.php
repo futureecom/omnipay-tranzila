@@ -75,6 +75,24 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
+     * @param array $data
+     * @return string
+     */
+    protected function prepareBody(array $data): string
+    {
+        return http_build_query($data, '', '&');
+    }
+
+    /**
+     * @param string $content
+     * @return ResponseInterface
+     */
+    protected function createResponse(string $content): ResponseInterface
+    {
+        return $this->response = new Response($this, $content);
+    }
+
+    /**
      * @param string $value
      * @return $this
      */
@@ -269,6 +287,19 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->getTranzilaTK();
     }
 
+    public function setTranzilaPW(?string $value): self
+    {
+        return $this->setParameter('TranzilaPW', $value);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTranzilaTK(): ?string
+    {
+        return $this->getParameter('TranzilaTK');
+    }
+
     /**
      * @param string|null $value
      * @return $this
@@ -279,12 +310,78 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setTranzilaTK(?string $value): self
+    {
+        return $this->setParameter('TranzilaTK', $value);
+    }
+
+    /**
      * @inheritDoc
      * @throws InvalidRequestException
      */
     public function getData(): array
     {
         return array_merge($this->getDefaultParameters(), $this->getTransactionData());
+    }
+
+    /**
+     * @return array
+     * @throws InvalidRequestException
+     */
+    protected function getDefaultParameters(): array
+    {
+        return array_filter([
+            // response format
+            'response_return_format' => 'json',
+
+            // account data
+            'supplier' => $this->getSupplier(),
+            'TranzilaPW' => $this->getTranzilaPW() ?: null,
+
+            // basic transaction data
+            'currency' => $this->getCurrencyCode(),
+            'orderId' => $this->getOrderId(),
+            'sum' => $this->getAmount(),
+
+            // credit card data
+            'ccno' => $this->getCcNo(),
+            'cred_type' => $this->getCredType(),
+            'expdate' => $this->getExpDate(),
+            'mycvv' => $this->getMyCVV(),
+
+            //card token
+            'TranzilaTK' => $this->getTranzilaTK(),
+
+            // transaction with installments
+            'fpay' => $this->getFpay(),
+            'npay' => $this->getNpay(),
+            'spay' => $this->getSpay(),
+
+            // others...
+            'index' => $this->getIndex(),
+            'authnr' => $this->getAuthNr(),
+            'CreditPass' => $this->getCreditPass(),
+            'myid' => $this->getMyID(),
+        ]);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getSupplier(): ?string
+    {
+        return $this->getParameter('supplier');
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTerminalPassword(): ?string
+    {
+        return $this->getTranzilaPW();
     }
 
     /**
@@ -302,6 +399,14 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         }
 
         throw new InvalidRequestException("Unsupported '{$currency}' currency.");
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getOrderId(): ?string
+    {
+        return $this->getParameter('orderId');
     }
 
     /**
@@ -375,6 +480,14 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     /**
      * @return string|null
      */
+    public function getIndex(): ?string
+    {
+        return $this->getParameter('index');
+    }
+
+    /**
+     * @return string|null
+     */
     public function getAuthNr(): ?string
     {
         return $this->getParameter('authnr');
@@ -397,28 +510,19 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @return string|null
+     * Return transaction data specified to given transaction.
+     *
+     * @return array
      */
-    public function getSupplier(): ?string
-    {
-        return $this->getParameter('supplier');
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getTranzilaPW(): ?string
-    {
-        return $this->getParameter('TranzilaPW');
-    }
+    abstract protected function getTransactionData(): array;
 
     /**
      * @param string|null $value
      * @return AbstractRequest
      */
-    public function setTranzilaPW(?string $value): self
+    public function setTerminalPassword(?string $value): self
     {
-        return $this->setParameter('TranzilaPW', $value);
+        return $this->setTranzilaPW($value);
     }
 
     /**
@@ -473,23 +577,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     public function setSupplier(?string $value): self
     {
         return $this->setParameter('supplier', $value);
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getTranzilaTK(): ?string
-    {
-        return $this->getParameter('TranzilaTK');
-    }
-
-    /**
-     * @param string|null $value
-     * @return $this
-     */
-    public function setTranzilaTK(?string $value): self
-    {
-        return $this->setParameter('TranzilaTK', $value);
     }
 
     /**
@@ -604,14 +691,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @return string|null
-     */
-    public function getIndex(): ?string
-    {
-        return $this->getParameter('index');
-    }
-
-    /**
      * @param string|null $value
      * @return $this
      */
@@ -637,38 +716,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @return string|null
-     */
-    public function getOrderId(): ?string
-    {
-        return $this->getParameter('orderId');
-    }
-
-    /**
      * @param string|null $value
      * @return self
      */
     public function setOrderId(?string $value): self
     {
         return $this->setParameter('orderId', $value);
-    }
-
-    /**
-     * @param array $data
-     * @return string
-     */
-    protected function prepareBody(array $data): string
-    {
-        return http_build_query($data, '', '&');
-    }
-
-    /**
-     * @param string $content
-     * @return ResponseInterface
-     */
-    protected function createResponse(string $content): ResponseInterface
-    {
-        return $this->response = new Response($this, $content);
     }
 
     /**
@@ -680,44 +733,10 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @return array
-     * @throws InvalidRequestException
+     * @return $this
      */
-    protected function getDefaultParameters(): array
+    public function getTranzilaPW(): ?string
     {
-        return array_filter([
-            // response format
-            'response_return_format' => 'json',
-
-            // basic transaction data
-            'currency' => $this->getCurrencyCode(),
-            'orderId' => $this->getOrderId(),
-            'sum' => $this->getAmount(),
-
-            // credit card data
-            'ccno' => $this->getCcNo(),
-            'cred_type' => $this->getCredType(),
-            'expdate' => $this->getExpDate(),
-            'mycvv' => $this->getMyCVV(),
-
-            // transaction with installments
-            'fpay' => $this->getFpay(),
-            'npay' => $this->getNpay(),
-            'spay' => $this->getSpay(),
-
-            // others...
-            'authnr' => $this->getAuthNr(),
-            'CreditPass' => $this->getCreditPass(),
-            'myid' => $this->getMyID(),
-            'supplier' => $this->getSupplier(),
-            'TranzilaPW' => $this->getTranzilaPW(),
-        ]);
+        return $this->getParameter('TranzilaPW');
     }
-
-    /**
-     * Return transaction data specified to given transaction.
-     *
-     * @return array
-     */
-    abstract protected function getTransactionData(): array;
 }

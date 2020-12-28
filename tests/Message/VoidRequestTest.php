@@ -35,14 +35,20 @@ class VoidRequestTest extends TestCase
 
     public function testSendMessage(): void
     {
-        $this->assertInstanceOf(Response::class, $this->request->send());
+        $request = $this->request->setAmount('0.01')
+            ->setTransactionReference('12-2222222');
+
+        $this->assertInstanceOf(Response::class, $request->send());
     }
 
     public function testVoid(): void
     {
         $this->setMockHttpResponse('Void.txt');
 
-        $response = $this->request->setTransactionReference('78-0000000')->send();
+        $response = $this->request
+            ->setTransactionReference('78-0000000')
+            ->setAmount('0.01')
+            ->send();
 
         $this->assertTransaction(
             $response,
@@ -52,11 +58,31 @@ class VoidRequestTest extends TestCase
         );
     }
 
+    public function testVoidTokenTransaction(): void
+    {
+        $this->setMockHttpResponse('VoidTokenTransaction.txt');
+
+        $response = $this->request
+            ->setTransactionReference('21-0043505')
+            ->setAmount('0.01')
+            ->send();
+
+        $this->assertTransaction(
+            $response,
+            '22-0000000',
+            'Transaction approved',
+            '000'
+        );
+    }
+
     public function testFailsVoid(): void
     {
         $this->setMockHttpResponse('ApplicationError.txt');
 
-        $response = $this->request->setTransactionReference('43-0000000')->send();
+        $response = $this->request
+            ->setAmount('0.01')
+            ->setTransactionReference('43-0000000')
+            ->send();
 
         $this->assertTransaction(
             $response,

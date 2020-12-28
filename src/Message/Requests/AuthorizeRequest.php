@@ -2,6 +2,7 @@
 
 namespace Futureecom\OmnipayTranzila\Message\Requests;
 
+use Omnipay\Common\Exception\InvalidRequestException;
 use Omnipay\Common\Message\ResponseInterface;
 
 /**
@@ -15,7 +16,6 @@ class AuthorizeRequest extends AbstractRequest
     public function getTransactionData(): array
     {
         return [
-            'task' => 'Doverify',
             'tranmode' => 'V',
         ];
     }
@@ -23,10 +23,19 @@ class AuthorizeRequest extends AbstractRequest
     /**
      * @param mixed $data
      * @return ResponseInterface
+     * @throws InvalidRequestException
      */
     public function sendData($data): ResponseInterface
     {
-        if ($this->hasParameters('ccno', 'expdate', 'mycvv')) {
+        if ($this->hasParameters('TranzilaTK')) {
+            $this->validate('expdate');
+
+            return parent::sendData($data);
+        }
+
+        if ($this->hasParameters('ccno')) {
+            $this->validate('expdate', 'mycvv');
+
             return parent::sendData($data);
         }
 

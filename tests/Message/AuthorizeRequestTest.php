@@ -33,7 +33,6 @@ class AuthorizeRequestTest extends TestCase
     public function testGetData(): void
     {
         $this->assertEquals([
-            'task' => 'Doverify',
             'tranmode' => 'V',
             'response_return_format' => 'json',
             'supplier' => 'test',
@@ -111,6 +110,25 @@ class AuthorizeRequestTest extends TestCase
             ->setCredType('1')
             ->setMyCVV('1234')
             ->setCurrency('ILS')
+            ->send();
+
+        $this->assertTransaction(
+            $response,
+            '60-0000000',
+            'Transaction approved',
+            '000'
+        );
+    }
+
+    public function testAuthorizePaymentUsingTranzilaToken(): void
+    {
+        $this->setMockHttpResponse('AuthorizeTokenCard.txt');
+
+        $response = $this->request
+            ->setAmount('0.01')
+            ->setCurrency('ILS')
+            ->setExpDate('0924')
+            ->setTranzilaToken('U99e9abcd81c2ca4444')
             ->send();
 
         $this->assertTransaction(

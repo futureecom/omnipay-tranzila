@@ -17,7 +17,6 @@ Content-Type: application/json
   "sum": "100",
   "Tempref": "03190001",
   "Responseid": "3",
-  "task": "Doverify",
   "Response": "004",
   "tz_parent": "test",
   "ccno": "1111",

@@ -87,4 +87,22 @@ class PurchaseRequestTest extends TestCase
             '000'
         );
     }
+
+    public function testPurchaseUsingCardToken(): void
+    {
+        $this->setMockHttpResponse('PurchaseTokenTransaction.txt');
+
+        $response = $this->request->setAmount('0.1')
+            ->setCurrency('ILS')
+            ->setTranzilaToken('U99e9abcd81c2ca4444')
+            ->setExpDate('0924')
+            ->send();
+
+        $this->assertTransaction(
+            $response,
+            '42-0000000',
+            'Transaction approved',
+            '000'
+        );
+    }
 }

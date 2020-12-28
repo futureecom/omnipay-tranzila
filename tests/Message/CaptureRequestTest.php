@@ -36,7 +36,6 @@ class CaptureRequestTest extends TestCase
     public function testGetData(): void
     {
         $this->assertEquals([
-            'task' => 'Doforce',
             'tranmode' => 'F',
             'response_return_format' => 'json',
             'supplier' => 'test',
@@ -45,14 +44,16 @@ class CaptureRequestTest extends TestCase
 
     public function testSendMessage(): void
     {
-        $this->assertInstanceOf(Response::class, $this->request->send());
+        $this->assertInstanceOf(Response::class, $this->request->setAmount('1')->send());
     }
 
     public function testCaptureWithoutCardData(): void
     {
         $this->setMockHttpResponse('IllegalCreditOperation.txt');
 
-        $response = $this->request->setTransactionReference('40-0000000')
+        $response = $this->request
+            ->setAmount('11')
+            ->setTransactionReference('40-0000000')
             ->send();
 
         $this->assertTransaction(
@@ -68,12 +69,30 @@ class CaptureRequestTest extends TestCase
     {
         $this->setMockHttpResponse('Capture.txt');
 
-        $response = $this->request->setTransactionReference('66-11111111')
+        $response = $this->request->setAmount('0.01')
+            ->setTransactionReference('23-0053748')
             ->send();
 
         $this->assertTransaction(
             $response,
             '40-0000000',
+            'Transaction approved',
+            '000'
+        );
+    }
+
+    public function testCaptureTransactionAuthorizedUsingToken(): void
+    {
+        $this->setMockHttpResponse('CaptureTokenTransaction.txt');
+
+        $response = $this->request
+            ->setTransactionReference('18-0099908')
+            ->setAmount('0.01')
+            ->send();
+
+        $this->assertTransaction(
+            $response,
+            '68-11111111',
             'Transaction approved',
             '000'
         );
