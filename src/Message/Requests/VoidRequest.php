@@ -2,6 +2,7 @@
 
 namespace Futureecom\OmnipayTranzila\Message\Requests;
 
+use Futureecom\OmnipayTranzila\Message\Responses\Response;
 use Omnipay\Common\Exception\InvalidRequestException;
 use Omnipay\Common\Message\ResponseInterface;
 
@@ -22,7 +23,7 @@ class VoidRequest extends AbstractRequest
 
     /**
      * @param mixed $data
-     * @return ResponseInterface
+     * @return Response&ResponseInterface
      * @throws InvalidRequestException
      */
     public function sendData($data): ResponseInterface

@@ -35,7 +35,7 @@ class PurchaseRequestTest extends TestCase
 
     public function testSendMessage(): void
     {
-        $this->assertInstanceOf(Response::class, $this->request->send());
+        self::assertInstanceOf(Response::class, $this->request->send());
     }
 
     public function testInvalidRequest(): void
@@ -102,7 +102,12 @@ class PurchaseRequestTest extends TestCase
             $response,
             '42-0000000',
             'Transaction approved',
-            '000'
+            '000',
+            true,
+            false,
+            false,
+            null,
+            'Od3df2079abc0894111'
         );
     }
 }

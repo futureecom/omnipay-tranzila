@@ -2,6 +2,7 @@
 
 namespace Tests\Concerns;
 
+use Futureecom\OmnipayTranzila\Message\Responses\Response;
 use Omnipay\Common\Message\RedirectResponseInterface;
 use Omnipay\Common\Message\ResponseInterface;
 use PHPUnit\Framework\Assert;
@@ -12,14 +13,15 @@ use PHPUnit\Framework\Assert;
 trait TransactionStatus
 {
     /**
-     * @param ResponseInterface $response
-     * @param string $reference
-     * @param string $message
-     * @param string $code
+     * @param Response&ResponseInterface $response
+     * @param string|null $reference
+     * @param string|null $message
+     * @param string|null $code
      * @param bool $isSuccess
      * @param bool $isRedirect
      * @param bool $isCancelled
      * @param string|null $redirectUrl
+     * @param string|null $tranzilaTK
      */
     protected function assertTransaction(
         ResponseInterface $response,
@@ -29,7 +31,8 @@ trait TransactionStatus
         bool $isSuccess = true,
         bool $isRedirect = false,
         bool $isCancelled = false,
-        ?string $redirectUrl = null
+        ?string $redirectUrl = null,
+        ?string $tranzilaTK = null
     )
     {
         Assert::assertEquals([
@@ -40,6 +43,7 @@ trait TransactionStatus
             'redirect_url' => $redirectUrl,
             'success' => $isSuccess,
             'transaction_reference' => $reference,
+            'TranzilaTK' => $tranzilaTK
         ], [
             'cancelled' => $response->isCancelled(),
             'code' => $response->getCode(),
@@ -48,6 +52,7 @@ trait TransactionStatus
             'redirect_url' => $this->getRedirectUrlFromResponse($response),
             'success' => $response->isSuccessful(),
             'transaction_reference' => $response->getTransactionReference(),
+            'TranzilaTK' => $response->getTranzilaTK(),
         ]);
     }
 

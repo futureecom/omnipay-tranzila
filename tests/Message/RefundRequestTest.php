@@ -35,7 +35,7 @@ class RefundRequestTest extends TestCase
 
     public function testSendMessage(): void
     {
-        $this->assertInstanceOf(Response::class, $this->request->send());
+        self::assertInstanceOf(Response::class, $this->request->send());
     }
 
     public function testPartialRefund(): void
@@ -110,7 +110,12 @@ class RefundRequestTest extends TestCase
             $response,
             '26-0000000',
             'Transaction approved',
-            '000'
+            '000',
+            true,
+            false,
+            false,
+            null,
+            'U99e9abcd81c2ca4444'
         );
     }
 }
