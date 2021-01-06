@@ -35,7 +35,7 @@ class PurchaseRequestTest extends TestCase
 
     public function testSendMessage(): void
     {
-        $this->assertInstanceOf(Response::class, $this->request->send());
+        self::assertInstanceOf(Response::class, $this->request->send());
     }
 
     public function testInvalidRequest(): void
@@ -85,6 +85,29 @@ class PurchaseRequestTest extends TestCase
             '42-0000000',
             'Transaction approved',
             '000'
+        );
+    }
+
+    public function testPurchaseUsingCardToken(): void
+    {
+        $this->setMockHttpResponse('PurchaseTokenTransaction.txt');
+
+        $response = $this->request->setAmount('0.1')
+            ->setCurrency('ILS')
+            ->setTranzilaToken('U99e9abcd81c2ca4444')
+            ->setExpDate('0924')
+            ->send();
+
+        $this->assertTransaction(
+            $response,
+            '42-0000000',
+            'Transaction approved',
+            '000',
+            true,
+            false,
+            false,
+            null,
+            'Od3df2079abc0894111'
         );
     }
 }

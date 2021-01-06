@@ -121,7 +121,7 @@ class RequestTest extends TestCase
     {
         $this->request->setTranzilaTK('TK')
             ->setTranzilaPK('PK')
-            ->setTranzilaPW('PW');
+            ->setTerminalPassword('PW');
 
         $this->assertEquals([
             'TranzilaTK' => 'TK',
@@ -132,7 +132,7 @@ class RequestTest extends TestCase
         $this->assertSame('TK', $this->request->getTranzilaTK());
         $this->assertSame('TK', $this->request->getTranzilaToken());
         $this->assertSame('PK', $this->request->getTranzilaPK());
-        $this->assertSame('PW', $this->request->getTranzilaPW());
+        $this->assertSame('PW', $this->request->getTerminalPassword());
     }
 
     public function testSetPayParameters(): void

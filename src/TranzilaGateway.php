@@ -32,7 +32,17 @@ class TranzilaGateway extends AbstractGateway
     {
         return [
             'supplier' => $this->getSupplier(),
+            'terminal_password' => $this->getTerminalPassword(),
         ];
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setSupplier(?string $value): self
+    {
+        return $this->setParameter('supplier', $value);
     }
 
     /**
@@ -41,6 +51,23 @@ class TranzilaGateway extends AbstractGateway
     public function getSupplier(): ?string
     {
         return $this->getParameter('supplier');
+    }
+
+    /**
+     * @param string|null $value
+     * @return $this
+     */
+    public function setTerminalPassword(?string $value): self
+    {
+        return $this->setParameter('terminal_password', $value);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTerminalPassword(): ?string
+    {
+        return $this->getParameter('terminal_password');
     }
 
     /**
@@ -81,14 +108,5 @@ class TranzilaGateway extends AbstractGateway
     public function void(array $options = array()): RequestInterface
     {
         return $this->createRequest(VoidRequest::class, $options);
-    }
-
-    /**
-     * @param string|null $value
-     * @return $this
-     */
-    public function setSupplier(?string $value): self
-    {
-        return $this->setParameter('supplier', $value);
     }
 }

@@ -114,6 +114,7 @@ use Futureecom\OmnipayTranzila\TranzilaGateway;
 
 /** @var TranzilaGateway $gateway */
 $response = $gateway->capture([
+    'amount' => '1',
     'transaction_reference' => '22-000000',
 ])->send();
 ```
@@ -155,7 +156,6 @@ $response = $gateway->refund([
     'amount' => '5.00',
     'currency' => 'ILS',
     'transaction_reference' => '22-000000',
-    'TranzilaTK' => 'DdyniRvcUGHBj9xO', // TranzilaToken
 ])->send();
 ```
 
@@ -171,6 +171,7 @@ use Futureecom\OmnipayTranzila\TranzilaGateway;
 /** @var TranzilaGateway $gateway */
 $response = $gateway->void([
     'transaction_reference' => '22-000000',
+    'TranzilaTK' => 'DdyniRvcUGHBj9xO', // TranzilaToken
 ])->send();
 ```
 

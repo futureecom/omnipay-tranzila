@@ -37,13 +37,11 @@ class GatewayTest extends TestCase
             'currency' => 'ILS',
             'expdate' => '1234',
             'mycvv' => '333',
-            'TranzilaPW' => 'TranzilaPW'
         ]);
 
         $this->assertInstanceOf(AuthorizeRequest::class, $request);
 
         $this->assertEquals([
-            'task' => 'Doverify',
             'tranmode' => 'V',
             'ccno' => '4444333322221111',
             'cred_type' => '1',
@@ -52,7 +50,7 @@ class GatewayTest extends TestCase
             'mycvv' => '333',
             'response_return_format' => 'json',
             'supplier' => 'test',
-            'TranzilaPW' => 'TranzilaPW',
+            'TranzilaPW' => 'terminal_password'
         ], $request->getData());
     }
 
@@ -66,11 +64,11 @@ class GatewayTest extends TestCase
         $this->assertInstanceOf(CaptureRequest::class, $request);
 
         $this->assertEquals([
-            'task' => 'Doforce',
             'tranmode' => 'F',
             'response_return_format' => 'json',
             'supplier' => 'test',
-            'authnr' => '00000000'
+            'authnr' => '00000000',
+            'TranzilaPW' => 'terminal_password'
         ], $request->getData());
     }
 
@@ -85,7 +83,6 @@ class GatewayTest extends TestCase
             'expdate' => '1234',
             'mycvv' => '333',
             'myid' => '12312312',
-            'TranzilaPW' => 'TranzilaPW',
         ]);
 
         $this->assertInstanceOf(PurchaseRequest::class, $request);
@@ -101,7 +98,7 @@ class GatewayTest extends TestCase
             'response_return_format' => 'json',
             'sum' => '10.00',
             'supplier' => 'test',
-            'TranzilaPW' => 'TranzilaPW',
+            'TranzilaPW' => 'terminal_password'
         ], $request->getData());
     }
 
@@ -124,6 +121,8 @@ class GatewayTest extends TestCase
             'myid' => '12312312',
             'response_return_format' => 'json',
             'supplier' => 'test',
+            'index' => '10',
+            'TranzilaPW' => 'terminal_password'
         ], $request->getData());
     }
 
@@ -141,6 +140,8 @@ class GatewayTest extends TestCase
             'authnr' => '00000000',
             'supplier' => 'test',
             'tranmode' => 'D78',
+            'index' => '78',
+            'TranzilaPW' => 'terminal_password'
         ], $request->getData());
     }
 
@@ -153,6 +154,7 @@ class GatewayTest extends TestCase
         );
         $this->gateway->initialize([
             'supplier' => 'test',
+            'terminal_password' => 'terminal_password'
         ]);
     }
 }

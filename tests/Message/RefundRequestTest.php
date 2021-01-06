@@ -4,8 +4,8 @@ namespace Tests\Message;
 
 use Futureecom\OmnipayTranzila\Message\Requests\RefundRequest;
 use Futureecom\OmnipayTranzila\Message\Responses\Response;
-use Omnipay\Tests\TestCase;
 use Tests\Concerns\TransactionStatus;
+use Omnipay\Tests\TestCase;
 
 /**
  * Class RefundRequestTest
@@ -35,7 +35,7 @@ class RefundRequestTest extends TestCase
 
     public function testSendMessage(): void
     {
-        $this->assertInstanceOf(Response::class, $this->request->send());
+        self::assertInstanceOf(Response::class, $this->request->send());
     }
 
     public function testPartialRefund(): void
@@ -93,6 +93,29 @@ class RefundRequestTest extends TestCase
             '54-0000000',
             'Transaction approved',
             '000'
+        );
+    }
+
+    public function testRefundTransactionAuthorizedUsingToken(): void
+    {
+        $this->setMockHttpResponse('RefundTokenTransaction.txt');
+
+        $response = $this->request
+            ->setAmount('0.01')
+            ->setTransactionReference('25-0000000')
+            ->setTranzilaToken('U99e9abcd81c2ca4444')
+            ->send();
+
+        $this->assertTransaction(
+            $response,
+            '26-0000000',
+            'Transaction approved',
+            '000',
+            true,
+            false,
+            false,
+            null,
+            'U99e9abcd81c2ca4444'
         );
     }
 }

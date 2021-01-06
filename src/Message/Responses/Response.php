@@ -53,6 +53,14 @@ class Response extends AbstractResponse
     /**
      * @return string|null
      */
+    public function getTranzilaTK(): ?string
+    {
+        return $this->data->TranzilaTK ?? null;
+    }
+
+    /**
+     * @return string|null
+     */
     public function getTransactionReference(): ?string
     {
         $arr = array_filter([
