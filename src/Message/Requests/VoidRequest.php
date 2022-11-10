@@ -13,6 +13,7 @@ class VoidRequest extends AbstractRequest
 {
     /**
      * @inheritDoc
+     * @return array{tranmode: string}
      */
     protected function getTransactionData(): array
     {

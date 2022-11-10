@@ -21,7 +21,7 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     /**
      * @var string
      */
-    public const GLUE = '-';
+    final public const GLUE = '-';
 
     /**
      * @var array
@@ -48,25 +48,16 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->createResponse($response->getBody()->getContents());
     }
 
-    /**
-     * @return string
-     */
     public function getHttpMethod(): string
     {
         return 'POST';
     }
 
-    /**
-     * @return string
-     */
     public function getEndpoint(): string
     {
         return static::ENDPOINT;
     }
 
-    /**
-     * @return array
-     */
     public function getHeaders(): array
     {
         return [
@@ -74,20 +65,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         ];
     }
 
-    /**
-     * @param array $data
-     * @return string
-     */
     protected function prepareBody(array $data): string
     {
         return http_build_query($data, '', '&');
     }
 
-    /**
-     * @param string $content
-     * @return ResponseInterface
-     */
-    protected function createResponse(string $content): ResponseInterface
+    protected function createResponse(string $content): Response
     {
         return $this->response = new Response($this, $content);
     }
@@ -109,16 +92,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('currency', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getAddress(): ?string
     {
         return $this->getParameter('address');
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setAddress(?string $value): self
@@ -126,16 +105,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('address', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getCity(): ?string
     {
         return $this->getParameter('city');
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setCity(?string $value): self
@@ -143,16 +118,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('city', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getCompany(): ?string
     {
         return $this->getParameter('company');
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setCompany(?string $value): self
@@ -160,16 +131,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('company', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getContact(): ?string
     {
         return $this->getParameter('contact');
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setContact(?string $value): self
@@ -177,16 +144,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('contact', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getEmail(): ?string
     {
         return $this->getParameter('email');
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setEmail(?string $value): self
@@ -194,16 +157,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('email', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getFax(): ?string
     {
         return $this->getParameter('fax');
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setFax(?string $value): self
@@ -211,16 +170,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('fax', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getOldPrice(): ?string
     {
         return $this->getParameter('oldprice');
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setOldPrice(?string $value): self
@@ -228,16 +183,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('oldprice', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getPDesc(): ?string
     {
         return $this->getParameter('pdesc');
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setPDesc(?string $value): self
@@ -245,16 +196,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('pdesc', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getPhone(): ?string
     {
         return $this->getParameter('phone');
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setPhone(?string $value): self
@@ -262,16 +209,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('phone', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getRemarks(): ?string
     {
         return $this->getParameter('remarks');
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setRemarks(?string $value): self
@@ -279,9 +222,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('remarks', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getTranzilaToken(): ?string
     {
         return $this->getTranzilaTK();
@@ -292,16 +232,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('TranzilaPW', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getTranzilaTK(): ?string
     {
         return $this->getParameter('TranzilaTK');
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setTranzilaToken(?string $value): self
@@ -310,7 +246,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setTranzilaTK(?string $value): self
@@ -328,8 +263,8 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @return array
      * @throws InvalidRequestException
+     * @return array{response_return_format: string, supplier?: string, TranzilaPW?: string, currency?: string, orderId?: string, sum?: string, ccno?: string, cred_type?: string, expdate?: string, mycvv?: string, TranzilaTK?: string, fpay?: string, npay?: string, spay?: string, index?: string, authnr?: string, CreditPass?: string, myid?: string}
      */
     protected function getDefaultParameters(): array
     {
@@ -368,29 +303,23 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         ]);
     }
 
-    /**
-     * @return string|null
-     */
     public function getSupplier(): ?string
     {
         return $this->getParameter('supplier');
     }
 
-    /**
-     * @return string|null
-     */
     public function getTerminalPassword(): ?string
     {
         return $this->getTranzilaPW();
     }
 
     /**
-     * @return string|null
      * @throws InvalidRequestException
      */
     public function getCurrencyCode(): ?string
     {
-        if (!$currency = $this->getCurrency()) {
+        $currency = $this->getCurrency();
+        if ($currency === '' || $currency === '0' || $currency === null) {
             return null;
         }
 
@@ -398,20 +327,14 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
             return $code;
         }
 
-        throw new InvalidRequestException("Unsupported '{$currency}' currency.");
+        throw new InvalidRequestException("Unsupported '$currency' currency.");
     }
 
-    /**
-     * @return string|null
-     */
     public function getOrderId(): ?string
     {
         return $this->getParameter('orderId');
     }
 
-    /**
-     * @return string|null
-     */
     public function getCcNo(): ?string
     {
         if (($card = $this->getCard()) && ($number = $card->getNumber())) {
@@ -421,17 +344,11 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->getParameter('ccno');
     }
 
-    /**
-     * @return string|null
-     */
     public function getCredType(): ?string
     {
         return $this->getParameter('cred_type');
     }
 
-    /**
-     * @return string|null
-     */
     public function getExpDate(): ?string
     {
         if (($card = $this->getCard()) && ($expDate = $card->getExpiryDate('my'))) {
@@ -441,9 +358,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->getParameter('expdate');
     }
 
-    /**
-     * @return string|null
-     */
     public function getMyCVV(): ?string
     {
         if (($card = $this->getCard()) && ($cvv = $card->getCvv())) {
@@ -453,57 +367,36 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->getParameter('mycvv');
     }
 
-    /**
-     * @return string|null
-     */
     public function getFpay(): ?string
     {
         return $this->getParameter('fpay');
     }
 
-    /**
-     * @return string|null
-     */
     public function getNpay(): ?string
     {
         return $this->getParameter('npay');
     }
 
-    /**
-     * @return string|null
-     */
     public function getSpay(): ?string
     {
         return $this->getParameter('spay');
     }
 
-    /**
-     * @return string|null
-     */
     public function getIndex(): ?string
     {
         return $this->getParameter('index');
     }
 
-    /**
-     * @return string|null
-     */
     public function getAuthNr(): ?string
     {
         return $this->getParameter('authnr');
     }
 
-    /**
-     * @return string|null
-     */
     public function getCreditPass(): ?string
     {
         return $this->getParameter('CreditPass');
     }
 
-    /**
-     * @return string|null
-     */
     public function getMyID(): ?string
     {
         return $this->getParameter('myid');
@@ -511,22 +404,15 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
 
     /**
      * Return transaction data specified to given transaction.
-     *
-     * @return array
      */
     abstract protected function getTransactionData(): array;
 
-    /**
-     * @param string|null $value
-     * @return AbstractRequest
-     */
     public function setTerminalPassword(?string $value): self
     {
         return $this->setTranzilaPW($value);
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setMyCVV(?string $value): self
@@ -534,61 +420,37 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('mycvv', $value);
     }
 
-    /**
-     * @param string|null $value
-     * @return AbstractRequest
-     */
     public function setMyID(?string $value): self
     {
         return $this->setParameter('myid', $value);
     }
 
-    /**
-     * @param string|null $value
-     * @return AbstractRequest
-     */
     public function setCredType(?string $value): self
     {
         return $this->setParameter('cred_type', $value);
     }
 
-    /**
-     * @param string|null $value
-     * @return AbstractRequest
-     */
     public function setCcNo(?string $value): self
     {
         return $this->setParameter('ccno', $value);
     }
 
-    /**
-     * @param string|null $value
-     * @return AbstractRequest
-     */
     public function setExpDate(?string $value): self
     {
         return $this->setParameter('expdate', $value);
     }
 
-    /**
-     * @param string|null $value
-     * @return AbstractRequest
-     */
     public function setSupplier(?string $value): self
     {
         return $this->setParameter('supplier', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getTranzilaPK(): ?string
     {
         return $this->getParameter('TranzilaPK');
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setTranzilaPK(?string $value): self
@@ -597,7 +459,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setFpay(?string $value): self
@@ -606,7 +467,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setSpay(?string $value): self
@@ -615,7 +475,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setNpay(?string $value): self
@@ -624,7 +483,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setSum(?string $value): self
@@ -633,10 +491,9 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @return string|null
      * @throws InvalidRequestException
      */
-    public function getSum(): ?string
+    public function getSum(): string
     {
         return $this->getAmount();
     }
@@ -659,7 +516,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setAuthNr(?string $value): self
@@ -668,7 +524,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setIndex(?string $value): self
@@ -676,9 +531,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('index', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getTransactionReference(): ?string
     {
         $arr = array_filter([$this->getIndex(), $this->getAuthNr()]);
@@ -691,7 +543,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setCreditPass(?string $value): self
@@ -699,11 +550,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('CreditPass', $value);
     }
 
-    /**
-     * @param string ...$keys
-     * @return bool
-     * @noinspection PhpDocSignatureInspection
-     */
     public function hasParameters(string ...$keys): bool
     {
         foreach ($keys as $key) {
@@ -715,26 +561,16 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return true;
     }
 
-    /**
-     * @param string|null $value
-     * @return self
-     */
     public function setOrderId(?string $value): self
     {
         return $this->setParameter('orderId', $value);
     }
 
-    /**
-     * @return RedirectResponseInterface
-     */
-    protected function createRedirectResponse(): RedirectResponseInterface
+    protected function createRedirectResponse(): RedirectResponse
     {
         return $this->response = new RedirectResponse($this);
     }
 
-    /**
-     * @return $this
-     */
     public function getTranzilaPW(): ?string
     {
         return $this->getParameter('TranzilaPW');

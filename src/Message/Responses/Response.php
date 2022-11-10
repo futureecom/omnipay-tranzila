@@ -18,12 +18,17 @@ class Response extends AbstractResponse
     /**
      * Response constructor.
      *
-     * @param RequestInterface $request
-     * @param string|null $data
+     * @param  RequestInterface  $request
+     * @param  string|null  $data
+     * @throws \JsonException
      */
     public function __construct(RequestInterface $request, ?string $data)
     {
-        parent::__construct($request, json_decode($data, false));
+        if ($data) {
+            $data = json_decode( $data, false, 512, JSON_THROW_ON_ERROR);
+        }
+
+        parent::__construct($request, $data);
     }
 
     /**

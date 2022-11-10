@@ -22,7 +22,7 @@ class CaptureRequestTest extends TestCase
     /**
      * @inheritDoc
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->request = new CaptureRequest(
             $this->getHttpClient(),

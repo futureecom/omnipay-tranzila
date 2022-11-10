@@ -13,6 +13,7 @@ class AuthorizeRequest extends AbstractRequest
 {
     /**
      * @inheritDoc
+     * @return array{tranmode: string}
      */
     public function getTransactionData(): array
     {

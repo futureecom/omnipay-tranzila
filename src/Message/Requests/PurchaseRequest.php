@@ -9,6 +9,7 @@ class PurchaseRequest extends AbstractRequest
 {
     /**
      * @inheritDoc
+     * @return array{tranmode: string}
      */
     public function getTransactionData(): array
     {

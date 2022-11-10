@@ -49,7 +49,6 @@ class RedirectResponse extends Response implements RedirectResponseInterface
     }
 
     /**
-     * @return string
      * @throws InvalidRequestException
      */
     private function getUrlParams(): string

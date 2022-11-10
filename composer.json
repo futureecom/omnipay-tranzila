@@ -12,15 +12,15 @@
   "type": "library",
   "homepage": "https://futureecom.com",
   "require": {
-    "php": "^7.2 || ^7.3 || ^7.4",
+    "php": "^8.1",
     "ext-curl": "*",
     "ext-json": "*",
     "omnipay/common": "^3.0"
   },
   "require-dev": {
-    "omnipay/tests": "^3.1",
+    "omnipay/tests": "^4.1",
     "symfony/var-dumper": "^5.0",
-    "symplify/easy-coding-standard": "^7.2"
+    "rector/rector": "^0.14.7"
   },
   "autoload": {
     "psr-4": {
