@@ -4,11 +4,11 @@ namespace Tests\Message;
 
 use Futureecom\OmnipayTranzila\Message\Requests\RefundRequest;
 use Futureecom\OmnipayTranzila\Message\Responses\Response;
-use Tests\Concerns\TransactionStatus;
 use Omnipay\Tests\TestCase;
+use Tests\Concerns\TransactionStatus;
 
 /**
- * Class RefundRequestTest
+ * Class RefundRequestTest.
  */
 class RefundRequestTest extends TestCase
 {

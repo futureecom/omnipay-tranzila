@@ -5,23 +5,22 @@ namespace Futureecom\OmnipayTranzila\Message\Requests;
 use Futureecom\OmnipayTranzila\Message\Responses\RedirectResponse;
 use Futureecom\OmnipayTranzila\Message\Responses\Response;
 use Omnipay\Common\Exception\InvalidRequestException;
-use Omnipay\Common\Message\RedirectResponseInterface;
 use Omnipay\Common\Message\ResponseInterface;
 
 /**
- * Class AbstractRequest
+ * Class AbstractRequest.
  */
 abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
 {
     /**
      * @var string
      */
-    protected const ENDPOINT = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi';
+    final public const GLUE = '-';
 
     /**
      * @var string
      */
-    final public const GLUE = '-';
+    protected const ENDPOINT = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi';
 
     /**
      * @var array
@@ -63,16 +62,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return [
             'content-type' => 'application/x-www-form-urlencoded',
         ];
-    }
-
-    protected function prepareBody(array $data): string
-    {
-        return http_build_query($data, '', '&');
-    }
-
-    protected function createResponse(string $content): Response
-    {
-        return $this->response = new Response($this, $content);
     }
 
     /**
@@ -262,47 +251,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return array_merge($this->getDefaultParameters(), $this->getTransactionData());
     }
 
-    /**
-     * @throws InvalidRequestException
-     * @return array{response_return_format: string, supplier?: string, TranzilaPW?: string, currency?: string, orderId?: string, sum?: string, ccno?: string, cred_type?: string, expdate?: string, mycvv?: string, TranzilaTK?: string, fpay?: string, npay?: string, spay?: string, index?: string, authnr?: string, CreditPass?: string, myid?: string}
-     */
-    protected function getDefaultParameters(): array
-    {
-        return array_filter([
-            // response format
-            'response_return_format' => 'json',
-
-            // account data
-            'supplier' => $this->getSupplier(),
-            'TranzilaPW' => $this->getTranzilaPW() ?: null,
-
-            // basic transaction data
-            'currency' => $this->getCurrencyCode(),
-            'orderId' => $this->getOrderId(),
-            'sum' => $this->getAmount(),
-
-            // credit card data
-            'ccno' => $this->getCcNo(),
-            'cred_type' => $this->getCredType(),
-            'expdate' => $this->getExpDate(),
-            'mycvv' => $this->getMyCVV(),
-
-            //card token
-            'TranzilaTK' => $this->getTranzilaTK(),
-
-            // transaction with installments
-            'fpay' => $this->getFpay(),
-            'npay' => $this->getNpay(),
-            'spay' => $this->getSpay(),
-
-            // others...
-            'index' => $this->getIndex(),
-            'authnr' => $this->getAuthNr(),
-            'CreditPass' => $this->getCreditPass(),
-            'myid' => $this->getMyID(),
-        ]);
-    }
-
     public function getSupplier(): ?string
     {
         return $this->getParameter('supplier');
@@ -319,7 +267,7 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     public function getCurrencyCode(): ?string
     {
         $currency = $this->getCurrency();
-        if ($currency === '' || $currency === '0' || $currency === null) {
+        if ($currency === '' || $currency === null) {
             return null;
         }
 
@@ -401,11 +349,6 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     {
         return $this->getParameter('myid');
     }
-
-    /**
-     * Return transaction data specified to given transaction.
-     */
-    abstract protected function getTransactionData(): array;
 
     public function setTerminalPassword(?string $value): self
     {
@@ -566,13 +509,69 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return $this->setParameter('orderId', $value);
     }
 
-    protected function createRedirectResponse(): RedirectResponse
-    {
-        return $this->response = new RedirectResponse($this);
-    }
-
     public function getTranzilaPW(): ?string
     {
         return $this->getParameter('TranzilaPW');
+    }
+
+    protected function prepareBody(array $data): string
+    {
+        return http_build_query($data, '', '&');
+    }
+
+    protected function createResponse(string $content): Response
+    {
+        return $this->response = new Response($this, $content);
+    }
+
+    /**
+     * @throws InvalidRequestException
+     * @return array{response_return_format: string, supplier?: string, TranzilaPW?: string, currency?: string, orderId?: string, sum?: string, ccno?: string, cred_type?: string, expdate?: string, mycvv?: string, TranzilaTK?: string, fpay?: string, npay?: string, spay?: string, index?: string, authnr?: string, CreditPass?: string, myid?: string}
+     */
+    protected function getDefaultParameters(): array
+    {
+        return array_filter([
+            // response format
+            'response_return_format' => 'json',
+
+            // account data
+            'supplier' => $this->getSupplier(),
+            'TranzilaPW' => $this->getTranzilaPW() ?: null,
+
+            // basic transaction data
+            'currency' => $this->getCurrencyCode(),
+            'orderId' => $this->getOrderId(),
+            'sum' => $this->getAmount(),
+
+            // credit card data
+            'ccno' => $this->getCcNo(),
+            'cred_type' => $this->getCredType(),
+            'expdate' => $this->getExpDate(),
+            'mycvv' => $this->getMyCVV(),
+
+            //card token
+            'TranzilaTK' => $this->getTranzilaTK(),
+
+            // transaction with installments
+            'fpay' => $this->getFpay(),
+            'npay' => $this->getNpay(),
+            'spay' => $this->getSpay(),
+
+            // others...
+            'index' => $this->getIndex(),
+            'authnr' => $this->getAuthNr(),
+            'CreditPass' => $this->getCreditPass(),
+            'myid' => $this->getMyID(),
+        ]);
+    }
+
+    /**
+     * Return transaction data specified to given transaction.
+     */
+    abstract protected function getTransactionData(): array;
+
+    protected function createRedirectResponse(): RedirectResponse
+    {
+        return $this->response = new RedirectResponse($this);
     }
 }

@@ -7,17 +7,12 @@ use Omnipay\Common\Exception\InvalidRequestException;
 use Omnipay\Common\Message\RedirectResponseInterface;
 
 /**
- * Class RedirectResponse
+ * Class RedirectResponse.
  *
  * @property AbstractRequest request
  */
 class RedirectResponse extends Response implements RedirectResponseInterface
 {
-    /**
-     * RedirectResponse constructor.
-     *
-     * @param AbstractRequest $request
-     */
     public function __construct(AbstractRequest $request)
     {
         parent::__construct($request, null);

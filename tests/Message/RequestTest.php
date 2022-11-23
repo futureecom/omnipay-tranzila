@@ -8,7 +8,7 @@ use Omnipay\Common\Exception\InvalidRequestException;
 use Omnipay\Tests\TestCase;
 
 /**
- * Class RequestTest
+ * Class RequestTest.
  */
 class RequestTest extends TestCase
 {
@@ -16,6 +16,14 @@ class RequestTest extends TestCase
      * @var AbstractRequest
      */
     private $request;
+
+    /**
+     * @inheritDoc
+     */
+    protected function setUp(): void
+    {
+        $this->request = $this->makeRequest();
+    }
 
     public function testSetCurrencyParameter(): void
     {
@@ -190,20 +198,9 @@ class RequestTest extends TestCase
         ], $this->request->getParameters());
     }
 
-    /**
-     * @inheritDoc
-     */
-    protected function setUp(): void
-    {
-        $this->request = $this->makeRequest();
-    }
-
-    /**
-     * @return AbstractRequest
-     */
     private function makeRequest(): AbstractRequest
     {
-        return new class($this->getHttpClient(), $this->getHttpRequest()) extends AbstractRequest {
+        return new class ($this->getHttpClient(), $this->getHttpRequest()) extends AbstractRequest {
             /**
              * @inheritDoc
              */

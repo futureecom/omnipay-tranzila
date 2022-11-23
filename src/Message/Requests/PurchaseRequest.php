@@ -3,7 +3,7 @@
 namespace Futureecom\OmnipayTranzila\Message\Requests;
 
 /**
- * Class PurchaseRequest
+ * Class PurchaseRequest.
  */
 class PurchaseRequest extends AbstractRequest
 {

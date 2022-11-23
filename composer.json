@@ -20,7 +20,8 @@
   "require-dev": {
     "omnipay/tests": "^4.1",
     "symfony/var-dumper": "^5.0",
-    "rector/rector": "^0.14.7"
+    "rector/rector": "^0.14.7",
+    "laravel/pint": "^1.2"
   },
   "autoload": {
     "psr-4": {

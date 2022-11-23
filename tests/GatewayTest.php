@@ -11,12 +11,25 @@ use Futureecom\OmnipayTranzila\TranzilaGateway;
 use Omnipay\Tests\TestCase;
 
 /**
- * Class GatewayTest
+ * Class GatewayTest.
  *
  * @property TranzilaGateway gateway
  */
 class GatewayTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->gateway = new TranzilaGateway(
+            $this->getHttpClient(),
+            $this->getHttpRequest()
+        );
+        $this->gateway->initialize([
+            'supplier' => 'test',
+            'terminal_password' => 'terminal_password',
+        ]);
+    }
+
     public function testGatewayName(): void
     {
         $this->assertSame('tranzila', $this->gateway->getName());
@@ -50,7 +63,7 @@ class GatewayTest extends TestCase
             'mycvv' => '333',
             'response_return_format' => 'json',
             'supplier' => 'test',
-            'TranzilaPW' => 'terminal_password'
+            'TranzilaPW' => 'terminal_password',
         ], $request->getData());
     }
 
@@ -58,7 +71,7 @@ class GatewayTest extends TestCase
     {
         /** @var CaptureRequest $request */
         $request = $this->gateway->capture([
-            'authnr' => '00000000'
+            'authnr' => '00000000',
         ]);
 
         $this->assertInstanceOf(CaptureRequest::class, $request);
@@ -68,7 +81,7 @@ class GatewayTest extends TestCase
             'response_return_format' => 'json',
             'supplier' => 'test',
             'authnr' => '00000000',
-            'TranzilaPW' => 'terminal_password'
+            'TranzilaPW' => 'terminal_password',
         ], $request->getData());
     }
 
@@ -98,7 +111,7 @@ class GatewayTest extends TestCase
             'response_return_format' => 'json',
             'sum' => '10.00',
             'supplier' => 'test',
-            'TranzilaPW' => 'terminal_password'
+            'TranzilaPW' => 'terminal_password',
         ], $request->getData());
     }
 
@@ -122,7 +135,7 @@ class GatewayTest extends TestCase
             'response_return_format' => 'json',
             'supplier' => 'test',
             'index' => '10',
-            'TranzilaPW' => 'terminal_password'
+            'TranzilaPW' => 'terminal_password',
         ], $request->getData());
     }
 
@@ -141,21 +154,7 @@ class GatewayTest extends TestCase
             'supplier' => 'test',
             'tranmode' => 'D78',
             'index' => '78',
-            'TranzilaPW' => 'terminal_password'
+            'TranzilaPW' => 'terminal_password',
         ], $request->getData());
     }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->gateway = new TranzilaGateway(
-            $this->getHttpClient(),
-            $this->getHttpRequest()
-        );
-        $this->gateway->initialize([
-            'supplier' => 'test',
-            'terminal_password' => 'terminal_password'
-        ]);
-    }
 }
-

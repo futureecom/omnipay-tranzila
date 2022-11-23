@@ -8,20 +8,12 @@ use Omnipay\Common\Message\ResponseInterface;
 use PHPUnit\Framework\Assert;
 
 /**
- * Trait TransactionStatus
+ * Trait TransactionStatus.
  */
 trait TransactionStatus
 {
     /**
      * @param Response&ResponseInterface $response
-     * @param string|null $reference
-     * @param string|null $message
-     * @param string|null $code
-     * @param bool $isSuccess
-     * @param bool $isRedirect
-     * @param bool $isCancelled
-     * @param string|null $redirectUrl
-     * @param string|null $tranzilaTK
      */
     protected function assertTransaction(
         ResponseInterface $response,
@@ -33,8 +25,7 @@ trait TransactionStatus
         bool $isCancelled = false,
         ?string $redirectUrl = null,
         ?string $tranzilaTK = null
-    )
-    {
+    ) {
         Assert::assertEquals([
             'cancelled' => $isCancelled,
             'code' => $code,
@@ -43,7 +34,7 @@ trait TransactionStatus
             'redirect_url' => $redirectUrl,
             'success' => $isSuccess,
             'transaction_reference' => $reference,
-            'TranzilaTK' => $tranzilaTK
+            'TranzilaTK' => $tranzilaTK,
         ], [
             'cancelled' => $response->isCancelled(),
             'code' => $response->getCode(),
@@ -56,10 +47,6 @@ trait TransactionStatus
         ]);
     }
 
-    /**
-     * @param ResponseInterface $response
-     * @return string|null
-     */
     private function getRedirectUrlFromResponse(ResponseInterface $response): ?string
     {
         return $response instanceof RedirectResponseInterface ? $response->getRedirectUrl() : null;

@@ -8,7 +8,7 @@ use Omnipay\Tests\TestCase;
 use Tests\Concerns\TransactionStatus;
 
 /**
- * Class CaptureRequestTest
+ * Class CaptureRequestTest.
  */
 class CaptureRequestTest extends TestCase
 {

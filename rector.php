@@ -12,7 +12,7 @@ use Rector\TypeDeclaration\Rector\Property\PropertyTypeDeclarationRector;
 
 return static function (RectorConfig $rectorConfig): void {
     $rectorConfig->paths([
-        __DIR__.'/src'
+        __DIR__.'/src',
     ]);
 
     $rectorConfig->sets([
@@ -32,6 +32,6 @@ return static function (RectorConfig $rectorConfig): void {
 
     $rectorConfig->skip([
         PropertyTypeDeclarationRector::class,
-        AddArrayReturnDocTypeRector::class
+        AddArrayReturnDocTypeRector::class,
     ]);
 };

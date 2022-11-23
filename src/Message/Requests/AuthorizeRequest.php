@@ -7,7 +7,7 @@ use Omnipay\Common\Exception\InvalidRequestException;
 use Omnipay\Common\Message\ResponseInterface;
 
 /**
- * Class AuthorizeRequest
+ * Class AuthorizeRequest.
  */
 class AuthorizeRequest extends AbstractRequest
 {
@@ -23,7 +23,6 @@ class AuthorizeRequest extends AbstractRequest
     }
 
     /**
-     * @param mixed $data
      * @return Response&ResponseInterface
      * @throws InvalidRequestException
      */

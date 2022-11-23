@@ -3,7 +3,7 @@
 namespace Futureecom\OmnipayTranzila\Message\Requests;
 
 /**
- * Class RefundRequest
+ * Class RefundRequest.
  */
 class RefundRequest extends AbstractRequest
 {

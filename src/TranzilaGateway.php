@@ -9,10 +9,9 @@ use Futureecom\OmnipayTranzila\Message\Requests\RefundRequest;
 use Futureecom\OmnipayTranzila\Message\Requests\VoidRequest;
 use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\Message\AbstractRequest;
-use Omnipay\Common\Message\RequestInterface;
 
 /**
- * Class TranzilaGateway
+ * Class TranzilaGateway.
  *
  * @noinspection PhpHierarchyChecksInspection
  */
