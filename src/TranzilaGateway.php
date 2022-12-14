@@ -8,10 +8,10 @@ use Futureecom\OmnipayTranzila\Message\Requests\PurchaseRequest;
 use Futureecom\OmnipayTranzila\Message\Requests\RefundRequest;
 use Futureecom\OmnipayTranzila\Message\Requests\VoidRequest;
 use Omnipay\Common\AbstractGateway;
-use Omnipay\Common\Message\RequestInterface;
+use Omnipay\Common\Message\AbstractRequest;
 
 /**
- * Class TranzilaGateway
+ * Class TranzilaGateway.
  *
  * @noinspection PhpHierarchyChecksInspection
  */
@@ -27,6 +27,7 @@ class TranzilaGateway extends AbstractGateway
 
     /**
      * @inheritDoc
+     * @return array{supplier: string|null, terminal_password: string|null}
      */
     public function getDefaultParameters(): array
     {
@@ -37,7 +38,6 @@ class TranzilaGateway extends AbstractGateway
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setSupplier(?string $value): self
@@ -45,16 +45,12 @@ class TranzilaGateway extends AbstractGateway
         return $this->setParameter('supplier', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getSupplier(): ?string
     {
         return $this->getParameter('supplier');
     }
 
     /**
-     * @param string|null $value
      * @return $this
      */
     public function setTerminalPassword(?string $value): self
@@ -62,9 +58,6 @@ class TranzilaGateway extends AbstractGateway
         return $this->setParameter('terminal_password', $value);
     }
 
-    /**
-     * @return string|null
-     */
     public function getTerminalPassword(): ?string
     {
         return $this->getParameter('terminal_password');
@@ -73,7 +66,7 @@ class TranzilaGateway extends AbstractGateway
     /**
      * @inheritDoc
      */
-    public function authorize(array $options = []): RequestInterface
+    public function authorize(array $options = []): AbstractRequest
     {
         return $this->createRequest(AuthorizeRequest::class, $options);
     }
@@ -81,7 +74,7 @@ class TranzilaGateway extends AbstractGateway
     /**
      * @inheritDoc
      */
-    public function capture(array $options = []): RequestInterface
+    public function capture(array $options = []): AbstractRequest
     {
         return $this->createRequest(CaptureRequest::class, $options);
     }
@@ -89,7 +82,7 @@ class TranzilaGateway extends AbstractGateway
     /**
      * @inheritDoc
      */
-    public function purchase(array $options = []): RequestInterface
+    public function purchase(array $options = []): AbstractRequest
     {
         return $this->createRequest(PurchaseRequest::class, $options);
     }
@@ -97,7 +90,7 @@ class TranzilaGateway extends AbstractGateway
     /**
      * @inheritDoc
      */
-    public function refund(array $options = []): RequestInterface
+    public function refund(array $options = []): AbstractRequest
     {
         return $this->createRequest(RefundRequest::class, $options);
     }
@@ -105,7 +98,7 @@ class TranzilaGateway extends AbstractGateway
     /**
      * @inheritDoc
      */
-    public function void(array $options = array()): RequestInterface
+    public function void(array $options = []): AbstractRequest
     {
         return $this->createRequest(VoidRequest::class, $options);
     }

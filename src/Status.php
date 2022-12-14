@@ -186,9 +186,6 @@ class Status
 
     /**
      * Return message assigned to a given status in tranzila.
-     *
-     * @param string|null $code
-     * @return string|null
      */
     public static function message(?string $code): ?string
     {

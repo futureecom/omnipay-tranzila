@@ -4,12 +4,13 @@ namespace Futureecom\OmnipayTranzila\Message\Responses;
 
 use Futureecom\OmnipayTranzila\Message\Requests\AbstractRequest;
 use Futureecom\OmnipayTranzila\Status;
+use JsonException;
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\RequestInterface;
 use stdClass;
 
 /**
- * Class Response
+ * Class Response.
  *
  * @property stdClass|null data
  */
@@ -18,12 +19,15 @@ class Response extends AbstractResponse
     /**
      * Response constructor.
      *
-     * @param RequestInterface $request
-     * @param string|null $data
+     * @throws JsonException
      */
     public function __construct(RequestInterface $request, ?string $data)
     {
-        parent::__construct($request, json_decode($data, false));
+        if ($data) {
+            $data = json_decode($data, false, 512, JSON_THROW_ON_ERROR);
+        }
+
+        parent::__construct($request, $data);
     }
 
     /**
@@ -50,17 +54,11 @@ class Response extends AbstractResponse
         return $this->data->error_msg ?? Status::message($this->getCode());
     }
 
-    /**
-     * @return string|null
-     */
     public function getTranzilaTK(): ?string
     {
         return $this->data->TranzilaTK ?? null;
     }
 
-    /**
-     * @return string|null
-     */
     public function getTransactionReference(): ?string
     {
         $arr = array_filter([

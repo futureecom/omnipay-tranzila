@@ -7,22 +7,11 @@ use Omnipay\Common\Exception\InvalidRequestException;
 use Omnipay\Common\Message\ResponseInterface;
 
 /**
- * Class VoidRequest
+ * Class VoidRequest.
  */
 class VoidRequest extends AbstractRequest
 {
     /**
-     * @inheritDoc
-     */
-    protected function getTransactionData(): array
-    {
-        return [
-            'tranmode' => "D{$this->getIndex()}",
-        ];
-    }
-
-    /**
-     * @param mixed $data
      * @return Response&ResponseInterface
      * @throws InvalidRequestException
      */
@@ -31,5 +20,16 @@ class VoidRequest extends AbstractRequest
         $this->validate('amount', 'authnr', 'index');
 
         return parent::sendData($data);
+    }
+
+    /**
+     * @inheritDoc
+     * @return array{tranmode: string}
+     */
+    protected function getTransactionData(): array
+    {
+        return [
+            'tranmode' => "D{$this->getIndex()}",
+        ];
     }
 }

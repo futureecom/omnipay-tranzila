@@ -8,7 +8,7 @@ use Omnipay\Tests\TestCase;
 use Tests\Concerns\TransactionStatus;
 
 /**
- * Class CaptureRequestTest
+ * Class CaptureRequestTest.
  */
 class CaptureRequestTest extends TestCase
 {
@@ -22,7 +22,7 @@ class CaptureRequestTest extends TestCase
     /**
      * @inheritDoc
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->request = new CaptureRequest(
             $this->getHttpClient(),

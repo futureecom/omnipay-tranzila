@@ -8,7 +8,7 @@ use Omnipay\Tests\TestCase;
 use Tests\Concerns\TransactionStatus;
 
 /**
- * Class VoidRequestTest
+ * Class VoidRequestTest.
  */
 class VoidRequestTest extends TestCase
 {

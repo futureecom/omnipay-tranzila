@@ -7,12 +7,13 @@ use Omnipay\Common\Exception\InvalidRequestException;
 use Omnipay\Common\Message\ResponseInterface;
 
 /**
- * Class AuthorizeRequest
+ * Class AuthorizeRequest.
  */
 class AuthorizeRequest extends AbstractRequest
 {
     /**
      * @inheritDoc
+     * @return array{tranmode: string}
      */
     public function getTransactionData(): array
     {
@@ -22,7 +23,6 @@ class AuthorizeRequest extends AbstractRequest
     }
 
     /**
-     * @param mixed $data
      * @return Response&ResponseInterface
      * @throws InvalidRequestException
      */
