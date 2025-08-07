@@ -9,17 +9,13 @@ class ReversalRequest extends AbstractRequest
 {
     public function getData(): array
     {
-        $this->validate('app_key', 'secret', 'terminal_name', 'amount', 'currency', 'transactionReference', 'card');
+        $this->validate('app_key', 'secret', 'terminal_name', 'amount', 'currency', 'transaction_reference', 'authorization_number');
 
         $data = [
             'terminal_name' => $this->getTerminalName(),
             'txn_type' => 'reversal',
             'reference_txn_id' => (int) $this->getTransactionReference(),
-            'authorization_number' => (string) ($this->getAuthorizationNumber() ?: '0000000'),
-            'expire_month' => (int) $this->getCard()->getExpiryMonth(),
-            'expire_year' => (int) $this->getCard()->getExpiryYear(),
-            'cvv' => (string) $this->getCard()->getCvv(),
-            'card_number' => (string) $this->getCard()->getNumber(),
+            'authorization_number' => (string) $this->getAuthorizationNumber(),
             'items' => [
                 [
                     'name' => $this->getDescription() ?: 'Reversal',
@@ -29,6 +25,21 @@ class ReversalRequest extends AbstractRequest
                 ],
             ],
         ];
+
+        // Handle token-based reversal
+        if ($this->getToken()) {
+            $data['card_number'] = (string) $this->getToken();
+            $data['expire_month'] = (int) $this->getExpiryMonth();
+            $data['expire_year'] = (int) $this->getExpiryYear();
+            $data['cvv'] = (string) random_int(100, 999); // Random CVV for token transactions
+        } else {
+            // Handle card-based reversal
+            $this->validate('card');
+            $data['card_number'] = (string) $this->getCard()->getNumber();
+            $data['expire_month'] = (int) $this->getCard()->getExpiryMonth();
+            $data['expire_year'] = (int) $this->getCard()->getExpiryYear();
+            $data['cvv'] = (string) $this->getCard()->getCvv();
+        }
 
         return $data;
     }
