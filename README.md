@@ -16,7 +16,7 @@ Omnipay is installed via [Composer](http://getcomposer.org/). To install, simply
 ```json
 {
     "require": {
-        "futureecom/omnipay-tranzila": "~4.0"
+        "futureecom/omnipay-tranzila": "~3.0"
     }
 }
 ```
