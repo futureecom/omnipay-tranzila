@@ -1,0 +1,11 @@
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
+
+{
+    "error_code": 1,
+    "message": "Invalid card number",
+    "transaction_result": {
+        "processor_response_code": "E001"
+    },
+    "original_request": {}
+} 

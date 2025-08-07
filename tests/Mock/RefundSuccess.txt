@@ -6,7 +6,7 @@ Content-Type: application/json
   "message": "Success",
   "transaction_result": {
     "processor_response_code": "000",
-    "transaction_id": "214",
+    "transaction_id": "216",
     "transaction_resource": 0,
     "Responsecvv": "3",
     "Responseid": "0",
@@ -20,13 +20,12 @@ Content-Type: application/json
     "payment_plan": "1",
     "credit_card_owner_id": "",
     "card_issuer": "2",
-    "token": "Od3df2079abc0894111",
+    "token": "Xb70373db92230b1111",
     "last_4": "1111",
     "card_mask": "411111******1111",
     "card_locality": "foreign",
-    "txn_type": "verify",
-    "tranmode": "V",
-    "verify_mode": 2
+    "txn_type": "credit",
+    "tranmode": "R"
   },
   "original_request": {}
 } 

@@ -1,113 +1,121 @@
 <?php
 
-namespace Tests\Message;
+namespace Omnipay\Tranzila\Tests\Message;
 
-use Futureecom\OmnipayTranzila\Message\Requests\PurchaseRequest;
-use Futureecom\OmnipayTranzila\Message\Responses\Response;
+use Omnipay\Common\CreditCard;
 use Omnipay\Tests\TestCase;
-use Tests\Concerns\TransactionStatus;
+use Omnipay\Tranzila\Message\Requests\PurchaseRequest;
+use Omnipay\Tranzila\Tests\Concerns\TransactionStatus;
 
-/**
- * Class PurchaseRequestTest.
- */
 class PurchaseRequestTest extends TestCase
 {
     use TransactionStatus;
 
-    /**
-     * @var PurchaseRequest
-     */
-    private $request;
+    protected PurchaseRequest $request;
 
-    /**
-     * @inheritDoc
-     */
-    public function setUp(): void
+    protected function setUp(): void
     {
-        $this->request = new PurchaseRequest(
-            $this->getHttpClient(),
-            $this->getHttpRequest()
-        );
+        parent::setUp();
+
+        $this->request = new PurchaseRequest($this->getHttpClient(), $this->getHttpRequest());
         $this->request->initialize([
-            'supplier' => 'test',
+            'app_key' => 'test_app_key',
+            'secret' => 'test_secret',
+            'terminal_name' => 'test_terminal',
+            'amount' => '10.00',
+            'currency' => 'USD',
+            'card' => new CreditCard([
+                'number' => '4111111111111111',
+                'expiryMonth' => '12',
+                'expiryYear' => '2025',
+                'cvv' => '123',
+            ]),
         ]);
     }
 
-    public function testSendMessage(): void
+    public function testGetData()
     {
-        self::assertInstanceOf(Response::class, $this->request->send());
+        $data = $this->request->getData();
+
+        $this->assertEquals('test_terminal', $data['terminal_name']);
+        $this->assertEquals('debit', $data['txn_type']);
+        $this->assertEquals('USD', $data['items'][0]['currency_code']);
+        $this->assertEquals('4111111111111111', $data['card_number']);
+        $this->assertEquals(12, $data['expire_month']);
+        $this->assertEquals(2025, $data['expire_year']);
+        $this->assertEquals('123', $data['cvv']);
+        $this->assertEquals(10.0, $data['items'][0]['unit_price']);
+        $this->assertEquals('Purchase', $data['items'][0]['name']);
     }
 
-    public function testInvalidRequest(): void
+    public function testSendData()
     {
-        $this->setMockHttpResponse('InvalidRequest.txt');
-
-        $response = $this->request->setSupplier(null)->send();
-
-        $this->assertTransaction(
-            $response,
-            null,
-            'Invalid request.',
-            '20000',
-            false
-        );
-    }
-
-    public function testZeroAmountResponse(): void
-    {
-        $this->setMockHttpResponse('AmountZero.txt');
+        $this->setMockHttpResponse('PurchaseSuccess.txt');
 
         $response = $this->request->send();
 
-        $this->assertTransaction(
-            $response,
-            null,
-            'Amount Zero',
-            '20014',
-            false
-        );
+        $this->assertTrue($response->isSuccessful());
+        $this->assertEquals('217', $response->getTransactionReference());
+        $this->assertEquals('Success', $response->getMessage());
+        $this->assertEquals('000', $response->getCode());
     }
 
-    public function testPurchase(): void
+    public function testPurchaseWithDescription()
     {
-        $this->setMockHttpResponse('Purchase.txt');
+        $this->request->setDescription('Test Purchase');
+        $data = $this->request->getData();
 
-        $response = $this->request->setAmount('100')
-            ->setCcNo('12312312')
-            ->setExpDate('1234')
-            ->setCredType('1')
-            ->setMyCVV('1234')
-            ->setCurrency('ILS')
-            ->send();
-
-        $this->assertTransaction(
-            $response,
-            '42-0000000',
-            'Transaction approved',
-            '000'
-        );
+        $this->assertEquals('Test Purchase', $data['items'][0]['name']);
     }
 
-    public function testPurchaseUsingCardToken(): void
+    public function testPurchaseWithToken(): void
     {
-        $this->setMockHttpResponse('PurchaseTokenTransaction.txt');
+        $this->setMockHttpResponse('PurchaseSuccess.txt');
 
-        $response = $this->request->setAmount('0.1')
-            ->setCurrency('ILS')
-            ->setTranzilaToken('U99e9abcd81c2ca4444')
-            ->setExpDate('0924')
-            ->send();
+        // Create a new request instance for token-based purchase
+        $tokenRequest = new PurchaseRequest($this->getHttpClient(), $this->getHttpRequest());
+        $tokenRequest->initialize([
+            'app_key' => 'test_app_key',
+            'secret' => 'test_secret',
+            'terminal_name' => 'test_terminal',
+            'amount' => '10.00',
+            'currency' => 'USD',
+            'token' => 'U99e9abcd81c2ca4444',
+        ]);
 
-        $this->assertTransaction(
-            $response,
-            '42-0000000',
-            'Transaction approved',
-            '000',
-            true,
-            false,
-            false,
-            null,
-            'Od3df2079abc0894111'
-        );
+        $response = $tokenRequest->send();
+
+        $this->assertTrue($response->isSuccessful());
+        $this->assertEquals('217', $response->getTransactionReference());
+        $this->assertEquals('Success', $response->getMessage());
+        $this->assertEquals('000', $response->getCode());
+    }
+
+    public function testPurchaseWithCreditCard(): void
+    {
+        $this->setMockHttpResponse('PurchaseSuccess.txt');
+
+        // Create a new request instance for card-based purchase
+        $cardRequest = new PurchaseRequest($this->getHttpClient(), $this->getHttpRequest());
+        $cardRequest->initialize([
+            'app_key' => 'test_app_key',
+            'secret' => 'test_secret',
+            'terminal_name' => 'test_terminal',
+            'amount' => '10.00',
+            'currency' => 'USD',
+            'card' => new CreditCard([
+                'number' => '4111111111111111',
+                'expiryMonth' => '12',
+                'expiryYear' => '2025',
+                'cvv' => '123',
+            ]),
+        ]);
+
+        $response = $cardRequest->send();
+
+        $this->assertTrue($response->isSuccessful());
+        $this->assertEquals('217', $response->getTransactionReference());
+        $this->assertEquals('Success', $response->getMessage());
+        $this->assertEquals('000', $response->getCode());
     }
 }

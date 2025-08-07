@@ -1,160 +1,112 @@
 <?php
 
-namespace Tests;
+namespace Omnipay\Tranzila\Tests;
 
-use Futureecom\OmnipayTranzila\Message\Requests\AuthorizeRequest;
-use Futureecom\OmnipayTranzila\Message\Requests\CaptureRequest;
-use Futureecom\OmnipayTranzila\Message\Requests\PurchaseRequest;
-use Futureecom\OmnipayTranzila\Message\Requests\RefundRequest;
-use Futureecom\OmnipayTranzila\Message\Requests\VoidRequest;
-use Futureecom\OmnipayTranzila\TranzilaGateway;
-use Omnipay\Tests\TestCase;
+use Omnipay\Common\CreditCard;
+use Omnipay\Tests\GatewayTestCase;
+use Omnipay\Tranzila\Gateway;
 
-/**
- * Class GatewayTest.
- *
- * @property TranzilaGateway gateway
- */
-class GatewayTest extends TestCase
+class GatewayTest extends GatewayTestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
-        $this->gateway = new TranzilaGateway(
-            $this->getHttpClient(),
-            $this->getHttpRequest()
-        );
-        $this->gateway->initialize([
-            'supplier' => 'test',
-            'terminal_password' => 'terminal_password',
-        ]);
+
+        $this->gateway = new Gateway($this->getHttpClient(), $this->getHttpRequest());
+        $this->gateway->setAppKey('test_app_key');
+        $this->gateway->setSecret('test_secret');
+        $this->gateway->setTerminalName('test_terminal');
     }
 
-    public function testGatewayName(): void
+    public function testAuthorize()
     {
-        $this->assertSame('tranzila', $this->gateway->getName());
-    }
-
-    public function testSetSupplier(): void
-    {
-        $supplier = $this->gateway->getSupplier();
-        $this->assertNotSame($supplier, $this->gateway->setSupplier('test2'));
-    }
-
-    public function testAuthorize(): void
-    {
-        /** @var AuthorizeRequest $request */
         $request = $this->gateway->authorize([
-            'ccno' => '4444333322221111',
-            'cred_type' => '1',
-            'currency' => 'ILS',
-            'expdate' => '1234',
-            'mycvv' => '333',
+            'amount' => '10.00',
+            'currency' => 'USD',
+            'card' => new CreditCard([
+                'number' => '4111111111111111',
+                'expiryMonth' => '12',
+                'expiryYear' => '2025',
+                'cvv' => '123',
+            ]),
         ]);
 
-        $this->assertInstanceOf(AuthorizeRequest::class, $request);
-
-        $this->assertEquals([
-            'tranmode' => 'V',
-            'ccno' => '4444333322221111',
-            'cred_type' => '1',
-            'currency' => '1',
-            'expdate' => '1234',
-            'mycvv' => '333',
-            'response_return_format' => 'json',
-            'supplier' => 'test',
-            'TranzilaPW' => 'terminal_password',
-        ], $request->getData());
+        $this->assertInstanceOf('Omnipay\Tranzila\Message\Requests\AuthorizeRequest', $request);
+        $this->assertEquals('10.00', $request->getAmount());
+        $this->assertEquals('USD', $request->getCurrency());
     }
 
-    public function testCapture(): void
+    public function testPurchase()
     {
-        /** @var CaptureRequest $request */
-        $request = $this->gateway->capture([
-            'authnr' => '00000000',
-        ]);
-
-        $this->assertInstanceOf(CaptureRequest::class, $request);
-
-        $this->assertEquals([
-            'tranmode' => 'F',
-            'response_return_format' => 'json',
-            'supplier' => 'test',
-            'authnr' => '00000000',
-            'TranzilaPW' => 'terminal_password',
-        ], $request->getData());
-    }
-
-    public function testPurchase(): void
-    {
-        /** @var PurchaseRequest $request */
         $request = $this->gateway->purchase([
             'amount' => '10.00',
-            'ccno' => '4444333322221111',
-            'cred_type' => '1',
-            'currency' => 'ILS',
-            'expdate' => '1234',
-            'mycvv' => '333',
-            'myid' => '12312312',
+            'currency' => 'USD',
+            'card' => new CreditCard([
+                'number' => '4111111111111111',
+                'expiryMonth' => '12',
+                'expiryYear' => '2025',
+                'cvv' => '123',
+            ]),
         ]);
 
-        $this->assertInstanceOf(PurchaseRequest::class, $request);
-
-        $this->assertEquals([
-            'tranmode' => 'A',
-            'ccno' => '4444333322221111',
-            'cred_type' => '1',
-            'currency' => '1',
-            'expdate' => '1234',
-            'mycvv' => '333',
-            'myid' => '12312312',
-            'response_return_format' => 'json',
-            'sum' => '10.00',
-            'supplier' => 'test',
-            'TranzilaPW' => 'terminal_password',
-        ], $request->getData());
+        $this->assertInstanceOf('Omnipay\Tranzila\Message\Requests\PurchaseRequest', $request);
+        $this->assertEquals('10.00', $request->getAmount());
+        $this->assertEquals('USD', $request->getCurrency());
     }
 
-    public function testRefund(): void
+    public function testRefund()
     {
-        /** @var RefundRequest $request */
         $request = $this->gateway->refund([
-            'index' => 10,
-            'authnr' => '00000000',
-            'cred_type' => '1',
-            'myid' => '12312312',
+            'amount' => '10.00',
+            'currency' => 'USD',
+            'transactionReference' => '12345',
         ]);
 
-        $this->assertInstanceOf(RefundRequest::class, $request);
-
-        $this->assertEquals([
-            'authnr' => '00000000',
-            'tranmode' => 'C10',
-            'cred_type' => '1',
-            'myid' => '12312312',
-            'response_return_format' => 'json',
-            'supplier' => 'test',
-            'index' => '10',
-            'TranzilaPW' => 'terminal_password',
-        ], $request->getData());
+        $this->assertInstanceOf('Omnipay\Tranzila\Message\Requests\RefundRequest', $request);
+        $this->assertEquals('10.00', $request->getAmount());
+        $this->assertEquals('USD', $request->getCurrency());
+        $this->assertEquals('12345', $request->getTransactionReference());
     }
 
-    public function testVoid(): void
+    public function testVerify()
+    {
+        $request = $this->gateway->verify([
+            'amount' => '10.00',
+            'currency' => 'USD',
+            'card' => new CreditCard([
+                'number' => '4111111111111111',
+                'expiryMonth' => '12',
+                'expiryYear' => '2025',
+                'cvv' => '123',
+            ]),
+        ]);
+
+        $this->assertInstanceOf('Omnipay\Tranzila\Message\Requests\VerifyRequest', $request);
+        $this->assertEquals('10.00', $request->getAmount());
+        $this->assertEquals('USD', $request->getCurrency());
+    }
+
+    public function testCapture()
+    {
+        $request = $this->gateway->capture([
+            'amount' => '10.00',
+            'currency' => 'USD',
+            'transactionReference' => '12345',
+        ]);
+
+        $this->assertInstanceOf('Omnipay\Tranzila\Message\Requests\CaptureRequest', $request);
+        $this->assertEquals('10.00', $request->getAmount());
+        $this->assertEquals('USD', $request->getCurrency());
+        $this->assertEquals('12345', $request->getTransactionReference());
+    }
+
+    public function testVoid()
     {
         $request = $this->gateway->void([
-            'index' => '78',
-            'authnr' => '00000000',
+            'transactionReference' => '12345',
         ]);
 
-        $this->assertInstanceOf(VoidRequest::class, $request);
-
-        $this->assertEquals([
-            'response_return_format' => 'json',
-            'authnr' => '00000000',
-            'supplier' => 'test',
-            'tranmode' => 'D78',
-            'index' => '78',
-            'TranzilaPW' => 'terminal_password',
-        ], $request->getData());
+        $this->assertInstanceOf('Omnipay\Tranzila\Message\Requests\VoidRequest', $request);
+        $this->assertEquals('12345', $request->getTransactionReference());
     }
 }

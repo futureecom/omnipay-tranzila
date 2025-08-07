@@ -1,6 +1,6 @@
 <?php
 
-namespace Futureecom\OmnipayTranzila;
+namespace Omnipay\Tranzila;
 
 /***
  * Class Status

@@ -1,0 +1,16 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+    "error_code": 0,
+    "message": "Transaction approved",
+    "transaction_result": {
+        "txn_type": "credit",
+        "transaction_id": "123456789",
+        "amount": "10.00",
+        "currency": "ILS",
+        "terminal_name": "test_terminal",
+        "auth_number": "0000000",
+        "processor_response_code": "000"
+    }
+} 

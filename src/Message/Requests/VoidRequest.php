@@ -1,35 +1,29 @@
 <?php
 
-namespace Futureecom\OmnipayTranzila\Message\Requests;
+namespace Omnipay\Tranzila\Message\Requests;
 
-use Futureecom\OmnipayTranzila\Message\Responses\Response;
-use Omnipay\Common\Exception\InvalidRequestException;
-use Omnipay\Common\Message\ResponseInterface;
+use Omnipay\Tranzila\Message\Responses\AbstractResponse;
+use Omnipay\Tranzila\Message\Responses\VoidResponse;
 
-/**
- * Class VoidRequest.
- */
 class VoidRequest extends AbstractRequest
 {
-    /**
-     * @return Response&ResponseInterface
-     * @throws InvalidRequestException
-     */
-    public function sendData($data): ResponseInterface
+    public function getData(): array
     {
-        $this->validate('amount', 'authnr', 'index');
+        $this->validate('app_key', 'secret', 'terminal_name', 'transaction_reference');
 
-        return parent::sendData($data);
+        $data = [
+            'terminal_name' => $this->getTerminalName(),
+            'txn_type' => 'cancel',
+            'reference_txn_id' => (int) $this->getTransactionReference(),
+            'authorization_number' => (string) ($this->getAuthorizationNumber() ?: '0000000'),
+            'response_language' => 'english',
+        ];
+
+        return $data;
     }
 
-    /**
-     * @inheritDoc
-     * @return array{tranmode: string}
-     */
-    protected function getTransactionData(): array
+    protected function createResponse(string $data): AbstractResponse
     {
-        return [
-            'tranmode' => "D{$this->getIndex()}",
-        ];
+        return $this->response = new VoidResponse($this, $data);
     }
 }

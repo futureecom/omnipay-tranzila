@@ -1,62 +1,84 @@
 <?php
 
-namespace Tests\Message;
+namespace Omnipay\Tranzila\Tests\Message;
 
-use Futureecom\OmnipayTranzila\Message\Requests\AuthorizeRequest;
-use Futureecom\OmnipayTranzila\Message\Responses\Response;
+use Omnipay\Common\CreditCard;
 use Omnipay\Tests\TestCase;
-use Tests\Concerns\TransactionStatus;
+use Omnipay\Tranzila\Message\Requests\AuthorizeRequest;
+use Omnipay\Tranzila\Tests\Concerns\TransactionStatus;
 
 class AuthorizeRequestTest extends TestCase
 {
     use TransactionStatus;
 
-    /**
-     * @var AuthorizeRequest
-     */
-    private $request;
+    protected AuthorizeRequest $request;
 
-    /**
-     * @inheritDoc
-     */
-    public function setUp(): void
+    protected function setUp(): void
     {
-        $this->request = new AuthorizeRequest(
-            $this->getHttpClient(),
-            $this->getHttpRequest()
-        );
+        parent::setUp();
+
+        $this->request = new AuthorizeRequest($this->getHttpClient(), $this->getHttpRequest());
         $this->request->initialize([
-            'supplier' => 'test',
+            'app_key' => 'test_app_key',
+            'secret' => 'test_secret',
+            'terminal_name' => 'test_terminal',
+            'amount' => '10.00',
+            'currency' => 'USD',
+            'card' => new CreditCard([
+                'number' => '4111111111111111',
+                'expiryMonth' => '12',
+                'expiryYear' => '2025',
+                'cvv' => '123',
+            ]),
         ]);
     }
 
-    public function testGetData(): void
+    public function testGetData()
     {
-        self::assertEquals([
-            'tranmode' => 'V',
-            'response_return_format' => 'json',
-            'supplier' => 'test',
-        ], $this->request->getData());
+        $data = $this->request->getData();
+
+        $this->assertEquals('test_terminal', $data['terminal_name']);
+        $this->assertEquals('verify', $data['txn_type']);
+        $this->assertEquals(5, $data['verify_mode']);
+        $this->assertEquals(12, $data['expire_month']);
+        $this->assertEquals(2025, $data['expire_year']);
+        $this->assertEquals('123', $data['cvv']);
+        $this->assertEquals('4111111111111111', $data['card_number']);
+        $this->assertEquals(10.0, $data['items'][0]['unit_price']);
+        $this->assertEquals('Authorization', $data['items'][0]['name']);
+        $this->assertEquals('USD', $data['items'][0]['currency_code']);
     }
 
-    public function testSendMessage(): void
+    public function testSendData()
     {
-        self::assertInstanceOf(Response::class, $this->request->send());
+        $this->setMockHttpResponse('AuthorizeSuccess.txt');
+
+        $response = $this->request->send();
+
+        $this->assertTrue($response->isSuccessful());
+        $this->assertEquals('211', $response->getTransactionReference());
+        $this->assertEquals('0000000', $response->getAuthorizationNumber());
+        $this->assertEquals('Success', $response->getMessage());
+        $this->assertEquals('000', $response->getCode());
     }
 
     public function testZeroAmountResponse(): void
     {
         $this->setMockHttpResponse('AmountZero.txt');
 
-        $response = $this->request->setCcNo('112233')
-            ->setMyCVV('123')
-            ->setExpDate('12-39')
+        $response = $this->request
+            ->setCard(new CreditCard([
+                'number' => '112233',
+                'expiryMonth' => '12',
+                'expiryYear' => '2039',
+                'cvv' => '123',
+            ]))
             ->send();
 
         $this->assertTransaction(
             $response,
             null,
-            'Amount Zero',
+            'Transaction failed - gateway error code: 20014, processor code: 20014',
             '20014',
             false
         );
@@ -67,15 +89,18 @@ class AuthorizeRequestTest extends TestCase
         $this->setMockHttpResponse('Expired.txt');
 
         $response = $this->request->setAmount('100')
-            ->setCcNo('4444333322221111')
-            ->setMyCVV('123')
-            ->setExpDate('12-20')
+            ->setCard(new CreditCard([
+                'number' => '4444333322221111',
+                'expiryMonth' => '12',
+                'expiryYear' => '2020',
+                'cvv' => '123',
+            ]))
             ->send();
 
         $this->assertTransaction(
             $response,
             '28-0000000',
-            'Expired.',
+            'Transaction failed - gateway error code: 36, processor code: 036',
             '036',
             false
         );
@@ -86,15 +111,18 @@ class AuthorizeRequestTest extends TestCase
         $this->setMockHttpResponse('Refusal.txt');
 
         $response = $this->request->setAmount('100')
-            ->setCcNo('4444333322221111')
-            ->setExpDate('1225')
-            ->setMyCVV('122')
+            ->setCard(new CreditCard([
+                'number' => '4444333322221111',
+                'expiryMonth' => '12',
+                'expiryYear' => '2025',
+                'cvv' => '122',
+            ]))
             ->send();
 
         $this->assertTransaction(
             $response,
             '29-0000000',
-            'Refusal.',
+            'Transaction failed - gateway error code: 4, processor code: 004',
             '004',
             false
         );
@@ -105,10 +133,13 @@ class AuthorizeRequestTest extends TestCase
         $this->setMockHttpResponse('Authorize.txt');
 
         $response = $this->request->setAmount('100')
-            ->setCcNo('4444333322221111')
-            ->setExpDate('1225')
+            ->setCard(new CreditCard([
+                'number' => '4444333322221111',
+                'expiryMonth' => '12',
+                'expiryYear' => '2025',
+                'cvv' => '1234',
+            ]))
             ->setCredType('1')
-            ->setMyCVV('1234')
             ->setCurrency('ILS')
             ->send();
 
@@ -120,46 +151,60 @@ class AuthorizeRequestTest extends TestCase
         );
     }
 
-    public function testAuthorizePaymentUsingTranzilaToken(): void
+    public function testAuthorizeWithToken(): void
     {
         $this->setMockHttpResponse('AuthorizeTokenCard.txt');
 
-        $response = $this->request
-            ->setAmount('0.01')
-            ->setCurrency('ILS')
-            ->setExpDate('0924')
-            ->setTranzilaToken('U99e9abcd81c2ca4444')
-            ->send();
+        // Create a new request instance for token-based authorization
+        $tokenRequest = new AuthorizeRequest($this->getHttpClient(), $this->getHttpRequest());
+        $tokenRequest->initialize([
+            'app_key' => 'test_app_key',
+            'secret' => 'test_secret',
+            'terminal_name' => 'test_terminal',
+            'amount' => '0.01',
+            'currency' => 'ILS',
+            'token' => 'U99e9abcd81c2ca4444',
+        ]);
+
+        $response = $tokenRequest->send();
 
         $this->assertTransaction(
             $response,
-            '60-0000000',
-            'Transaction approved',
+            '214',
+            'Success',
             '000',
             true,
             false,
-            false,
-            null,
             'Od3df2079abc0894111'
         );
     }
 
-    public function testAuthorizeWithRedirect(): void
+    public function testAuthorizeWithCreditCard(): void
     {
-        $response = $this->request->setAmount('1')
-            ->setCurrency('ILS')
-            ->setOrderId('d6d98b88-c866-4496-9bd4-de7ba48d0f52')
-            ->send();
+        $this->setMockHttpResponse('AuthorizeSuccess.txt');
 
-        $this->assertTransaction(
-            $response,
-            null,
-            null,
-            null,
-            false,
-            true,
-            false,
-            'https://direct.tranzila.com/test/iframe.php?tranmode=VK&TranzilaTK=1&currency=1&orderId=d6d98b88-c866-4496-9bd4-de7ba48d0f52&sum=1.00'
-        );
+        // Create a new request instance for card-based authorization
+        $cardRequest = new AuthorizeRequest($this->getHttpClient(), $this->getHttpRequest());
+        $cardRequest->initialize([
+            'app_key' => 'test_app_key',
+            'secret' => 'test_secret',
+            'terminal_name' => 'test_terminal',
+            'amount' => '10.00',
+            'currency' => 'USD',
+            'card' => new CreditCard([
+                'number' => '4111111111111111',
+                'expiryMonth' => '12',
+                'expiryYear' => '2025',
+                'cvv' => '123',
+            ]),
+        ]);
+
+        $response = $cardRequest->send();
+
+        $this->assertTrue($response->isSuccessful());
+        $this->assertEquals('211', $response->getTransactionReference());
+        $this->assertEquals('0000000', $response->getAuthorizationNumber());
+        $this->assertEquals('Success', $response->getMessage());
+        $this->assertEquals('000', $response->getCode());
     }
 }

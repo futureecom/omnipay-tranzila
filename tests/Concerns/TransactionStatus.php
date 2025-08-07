@@ -1,54 +1,28 @@
 <?php
 
-namespace Tests\Concerns;
+namespace Omnipay\Tranzila\Tests\Concerns;
 
-use Futureecom\OmnipayTranzila\Message\Responses\Response;
-use Omnipay\Common\Message\RedirectResponseInterface;
 use Omnipay\Common\Message\ResponseInterface;
-use PHPUnit\Framework\Assert;
 
-/**
- * Trait TransactionStatus.
- */
 trait TransactionStatus
 {
-    /**
-     * @param Response&ResponseInterface $response
-     */
     protected function assertTransaction(
         ResponseInterface $response,
-        ?string $reference,
-        ?string $message,
-        ?string $code,
-        bool $isSuccess = true,
-        bool $isRedirect = false,
+        ?string $transactionReference = null,
+        ?string $message = null,
+        ?string $code = null,
+        bool $isSuccessful = true,
         bool $isCancelled = false,
-        ?string $redirectUrl = null,
-        ?string $tranzilaTK = null
-    ) {
-        Assert::assertEquals([
-            'cancelled' => $isCancelled,
-            'code' => $code,
-            'message' => $message,
-            'redirect' => $isRedirect,
-            'redirect_url' => $redirectUrl,
-            'success' => $isSuccess,
-            'transaction_reference' => $reference,
-            'TranzilaTK' => $tranzilaTK,
-        ], [
-            'cancelled' => $response->isCancelled(),
-            'code' => $response->getCode(),
-            'message' => $response->getMessage(),
-            'redirect' => $response->isRedirect(),
-            'redirect_url' => $this->getRedirectUrlFromResponse($response),
-            'success' => $response->isSuccessful(),
-            'transaction_reference' => $response->getTransactionReference(),
-            'TranzilaTK' => $response->getTranzilaTK(),
-        ]);
-    }
+        ?string $token = null
+    ): void {
+        $this->assertEquals($isSuccessful, $response->isSuccessful());
+        $this->assertEquals($isCancelled, $response->isCancelled());
+        $this->assertEquals($transactionReference, $response->getTransactionReference());
+        $this->assertEquals($message, $response->getMessage());
+        $this->assertEquals($code, $response->getCode());
 
-    private function getRedirectUrlFromResponse(ResponseInterface $response): ?string
-    {
-        return $response instanceof RedirectResponseInterface ? $response->getRedirectUrl() : null;
+        if ($token !== null) {
+            $this->assertEquals($token, $response->getToken());
+        }
     }
 }

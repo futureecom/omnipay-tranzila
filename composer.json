@@ -1,6 +1,7 @@
 {
   "name": "futureecom/omnipay-tranzila",
-  "description": "TranZila driver for the Omnipay payment processing library.",
+  "type": "library",
+  "description": "Tranzila driver for the Omnipay payment processing library",
   "keywords": [
     "gateway",
     "merchant",
@@ -9,31 +10,47 @@
     "payment",
     "tranzila"
   ],
-  "type": "library",
-  "homepage": "https://futureecom.com",
+  "homepage": "https://github.com/futureecom/omnipay-tranzila",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Avi Rosenblatt",
+      "email": "avi@futureecom.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Omnipay\\Tranzila\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Omnipay\\Tranzila\\Tests\\": "tests/"
+    }
+  },
   "require": {
-    "php": "^8.1",
+    "php": "^8.3",
     "ext-curl": "*",
     "ext-json": "*",
-    "omnipay/common": "^3.0"
+    "omnipay/common": "^3.0",
+    "symfony/http-client": "^7.1",
+    "guzzlehttp/guzzle": "^7.0",
+    "php-http/guzzle7-adapter": "^1.0"
   },
   "require-dev": {
     "omnipay/tests": "^4.1",
     "symfony/var-dumper": "^5.0",
-    "rector/rector": "^0.14.7",
-    "laravel/pint": "^1.2"
+    "rector/rector": "^0.14.6",
+    "laravel/pint": "^1.2",
+    "http-interop/http-factory-guzzle": "^1.2",
+    "phpunit/phpunit": "^11.0",
+    "php-http/mock-client": "^1.6"
   },
-  "autoload": {
-    "psr-4": {
-      "Futureecom\\OmnipayTranzila\\": "src/",
-      "Tests\\": "tests/"
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "allow-plugins": {
+      "php-http/discovery": true
     }
-  },
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Maciej Kozlowski",
-      "email": "maciej@futureecom.com"
-    }
-  ]
+  }
 }

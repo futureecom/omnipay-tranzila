@@ -1,100 +1,111 @@
 <?php
 
-namespace Tests\Message;
+namespace Omnipay\Tranzila\Tests\Message;
 
-use Futureecom\OmnipayTranzila\Message\Requests\CaptureRequest;
-use Futureecom\OmnipayTranzila\Message\Responses\Response;
 use Omnipay\Tests\TestCase;
-use Tests\Concerns\TransactionStatus;
+use Omnipay\Tranzila\Message\Requests\CaptureRequest;
+use Omnipay\Tranzila\Tests\Concerns\TransactionStatus;
 
-/**
- * Class CaptureRequestTest.
- */
 class CaptureRequestTest extends TestCase
 {
     use TransactionStatus;
 
-    /**
-     * @var CaptureRequest
-     */
-    private $request;
+    protected CaptureRequest $request;
 
-    /**
-     * @inheritDoc
-     */
     protected function setUp(): void
     {
-        $this->request = new CaptureRequest(
-            $this->getHttpClient(),
-            $this->getHttpRequest()
-        );
+        parent::setUp();
+
+        $this->request = new CaptureRequest($this->getHttpClient(), $this->getHttpRequest());
         $this->request->initialize([
-            'supplier' => 'test',
+            'app_key' => 'test_app_key',
+            'secret' => 'test_secret',
+            'terminal_name' => 'test_terminal',
+            'amount' => '10.00',
+            'currency' => 'ILS',
+            'transaction_reference' => '12345',
+            'authorization_number' => '0000000',
+            'card' => new \Omnipay\Common\CreditCard([
+                'number' => '4111111111111111',
+                'expiryMonth' => '12',
+                'expiryYear' => '2025',
+                'cvv' => '123',
+            ]),
         ]);
     }
 
-    public function testGetData(): void
+    public function testGetData()
     {
-        $this->assertEquals([
-            'tranmode' => 'F',
-            'response_return_format' => 'json',
-            'supplier' => 'test',
-        ], $this->request->getData());
+        $data = $this->request->getData();
+
+        $this->assertSame('test_terminal', $data['terminal_name']);
+        $this->assertSame('force', $data['txn_type']);
+        $this->assertSame(12345, $data['reference_txn_id']);
+        $this->assertSame(10.0, $data['items'][0]['unit_price']);
+        $this->assertSame('ILS', $data['items'][0]['currency_code']);
+        $this->assertSame('Capture', $data['items'][0]['name']);
     }
 
-    public function testSendMessage(): void
+    public function testSendData()
     {
-        $this->assertInstanceOf(Response::class, $this->request->setAmount('1')->send());
+        $this->setMockHttpResponse('CaptureSuccess.txt');
+
+        $response = $this->request->send();
+
+        $this->assertTrue($response->isSuccessful());
+        $this->assertSame('215', $response->getTransactionReference());
+        $this->assertSame('Success', $response->getMessage());
+        $this->assertSame('000', $response->getCode());
     }
 
-    public function testCaptureWithoutCardData(): void
+    public function testCaptureWithDescription()
     {
-        $this->setMockHttpResponse('IllegalCreditOperation.txt');
+        $this->request->setDescription('Test Capture');
+        $data = $this->request->getData();
+
+        $this->assertSame('Test Capture', $data['items'][0]['name']);
+    }
+
+    public function testCaptureWithInvalidReference()
+    {
+        $this->setMockHttpResponse('CaptureFailure.txt');
+
+        $response = $this->request->send();
+
+        $this->assertTransaction(
+            $response,
+            null,
+            'Transaction failed - gateway error code: 1, processor code: 001',
+            '001',
+            false
+        );
+    }
+
+    public function testCaptureWithZeroAmount()
+    {
+        $this->setMockHttpResponse('AmountZero.txt');
 
         $response = $this->request
-            ->setAmount('11')
-            ->setTransactionReference('40-0000000')
+            ->setAmount('0.00')
+            ->setCurrency('ILS')
             ->send();
 
         $this->assertTransaction(
             $response,
             null,
-            'Illegal Credit Operation 2',
-            '20021',
+            'Transaction failed - gateway error code: 20014, processor code: 20014',
+            '20014',
             false
         );
     }
 
-    public function testCapture(): void
+    public function testCaptureWithDifferentCurrency()
     {
-        $this->setMockHttpResponse('Capture.txt');
+        $this->request->setCurrency('ILS');
+        $data = $this->request->getData();
 
-        $response = $this->request->setAmount('0.01')
-            ->setTransactionReference('23-0053748')
-            ->send();
-
-        $this->assertTransaction(
-            $response,
-            '40-0000000',
-            'Transaction approved',
-            '000'
-        );
-    }
-
-    public function testCaptureTransactionAuthorizedUsingToken(): void
-    {
-        $this->setMockHttpResponse('CaptureTokenTransaction.txt');
-
-        $response = $this->request
-            ->setTransactionReference('18-0099908')
-            ->setAmount('0.01')
-            ->send();
-
-        $this->assertTransaction(
-            $response,
-            '68-11111111',
-            'Transaction approved',
-            '000'
-        );
+        // Currency is not part of the capture request structure anymore
+        $this->assertSame('force', $data['txn_type']);
+        $this->assertSame(12345, $data['reference_txn_id']);
     }
 }

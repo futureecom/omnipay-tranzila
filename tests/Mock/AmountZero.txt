@@ -1,11 +1,13 @@
-HTTP/1.1 200 OK
-Date: Tue, 17 Mar 2020 09:26:20 GMT
-Server: Apache
-Transfer-Encoding: chunked
-Content-Type: application/json; charset=utf-8
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
 
 {
-  "error_msg": "Amount Zero",
-  "error_type": "Action",
-  "Response": 20014
-}
+    "error_code": 20014,
+    "message": "Amount Zero",
+    "transaction_result": {
+        "processor_response_code": "20014",
+        "amount": "0.00",
+        "currency_code": "ILS"
+    },
+    "original_request": {}
+} 
