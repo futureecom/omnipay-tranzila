@@ -8,7 +8,7 @@ use Omnipay\Tranzila\Message\Requests\CaptureRequest;
 use Omnipay\Tranzila\Message\Requests\HandshakeRequest;
 use Omnipay\Tranzila\Message\Requests\PurchaseRequest;
 use Omnipay\Tranzila\Message\Requests\RefundRequest;
-
+use Omnipay\Tranzila\Message\Requests\ReversalRequest;
 use Omnipay\Tranzila\Message\Requests\VerifyRequest;
 use Omnipay\Tranzila\Message\Requests\VoidRequest;
 
@@ -98,6 +98,11 @@ class Gateway extends AbstractGateway
     public function void(array $options = [])
     {
         return $this->createRequest(VoidRequest::class, $options);
+    }
+
+    public function reversal(array $options = [])
+    {
+        return $this->createRequest(ReversalRequest::class, $options);
     }
 
     public function handshake(array $options = [])
