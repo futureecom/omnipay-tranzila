@@ -3,14 +3,14 @@ Content-Type: application/json
 
 {
     "error_code": 0,
-    "message": "Transaction approved",
+    "message": "Success",
     "transaction_result": {
         "processor_response_code": "000",
-        "transaction_id": "60-0000000",
+        "transaction_id": "211",
         "transaction_resource": 0,
         "Responsecvv": "3",
         "Responseid": "0",
-        "amount": 100,
+        "amount": 1,
         "auth_number": "0000000",
         "card_type": "2",
         "card_type_name": "Visa",
@@ -25,7 +25,8 @@ Content-Type: application/json
         "card_mask": "411111******1111",
         "card_locality": "foreign",
         "txn_type": "verify",
-        "tranmode": "V"
+        "tranmode": "V",
+        "verify_mode": 2
     },
     "original_request": {}
 } 

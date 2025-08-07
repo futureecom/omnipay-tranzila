@@ -1,0 +1,18 @@
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
+
+{
+    "error_code": 20112,
+    "message": "Original transaction not found",
+    "transaction_result": {
+        "processor_response_code": "001",
+        "transaction_id": null,
+        "auth_number": null,
+        "card_type": null,
+        "card_type_name": null,
+        "currency_code": "ILS",
+        "amount": 10.00,
+        "txn_type": "cancel",
+        "tranmode": "A"
+    }
+} 

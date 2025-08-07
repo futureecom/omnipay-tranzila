@@ -1,0 +1,11 @@
+HTTP/1.1 400 Bad Request
+Content-Type: application/json
+
+{
+    "error_code": 1,
+    "message": "Invalid transaction reference",
+    "transaction_result": {
+        "processor_response_code": "001"
+    },
+    "original_request": {}
+} 

@@ -2,37 +2,37 @@ name: Build
 
 on:
   push:
-    branches: 
-    - master
+    branches:
+      - master
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   run:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-versions: ['8.1']
- 
+        php-versions: ["8.3"]
+
     name: PHP ${{ matrix.php-versions }} Test
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php-versions }}
-        coverage: xdebug        
-        tools: phpunit
-      env:
-        COMPOSER_TOKEN: ${{ secrets.TOKEN }}
-            
-    - name: Validate composer.json
-      run: composer validate
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          coverage: xdebug
+          tools: phpunit
+        env:
+          COMPOSER_TOKEN: ${{ secrets.TOKEN }}
 
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress --no-suggest
-      
-    - name: Run test suite
-      run: vendor/bin/phpunit --coverage-text
+      - name: Validate composer.json
+        run: composer validate
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Run test suite
+        run: vendor/bin/phpunit --coverage-text

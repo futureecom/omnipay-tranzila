@@ -1,95 +1,90 @@
 <?php
 
-namespace Tests\Message;
+namespace Omnipay\Tranzila\Tests\Message;
 
-use Futureecom\OmnipayTranzila\Message\Requests\VoidRequest;
-use Futureecom\OmnipayTranzila\Message\Responses\Response;
 use Omnipay\Tests\TestCase;
-use Tests\Concerns\TransactionStatus;
+use Omnipay\Tranzila\Message\Requests\VoidRequest;
+use Omnipay\Tranzila\Tests\Concerns\TransactionStatus;
 
-/**
- * Class VoidRequestTest.
- */
 class VoidRequestTest extends TestCase
 {
     use TransactionStatus;
 
-    /**
-     * @var VoidRequest
-     */
-    private $request;
+    protected VoidRequest $request;
 
-    /**
-     * @inheritDoc
-     */
-    public function setUp(): void
+    protected function setUp(): void
     {
-        $this->request = new VoidRequest(
-            $this->getHttpClient(),
-            $this->getHttpRequest()
-        );
+        parent::setUp();
+
+        $this->request = new VoidRequest($this->getHttpClient(), $this->getHttpRequest());
         $this->request->initialize([
-            'supplier' => 'test',
+            'app_key' => 'test_app_key',
+            'secret' => 'test_secret',
+            'terminal_name' => 'test_terminal',
+            'transaction_reference' => '12345',
+            'authorization_number' => '0000000',
         ]);
     }
 
-    public function testSendMessage(): void
+    public function testGetData()
     {
-        $request = $this->request->setAmount('0.01')
-            ->setTransactionReference('12-2222222');
+        $data = $this->request->getData();
 
-        $this->assertInstanceOf(Response::class, $request->send());
+        $this->assertSame('test_terminal', $data['terminal_name']);
+        $this->assertSame('cancel', $data['txn_type']);
+        $this->assertSame(12345, $data['reference_txn_id']);
+        $this->assertSame('0000000', $data['authorization_number']);
+        $this->assertSame('english', $data['response_language']);
     }
 
-    public function testVoid(): void
+    public function testSendData()
     {
-        $this->setMockHttpResponse('Void.txt');
+        $this->setMockHttpResponse('VoidSuccess.txt');
 
-        $response = $this->request
-            ->setTransactionReference('78-0000000')
-            ->setAmount('0.01')
-            ->send();
+        $response = $this->request->send();
+
+        $this->assertTrue($response->isSuccessful());
+        $this->assertNull($response->getTransactionReference());
+        $this->assertEquals('Success', $response->getMessage());
+        $this->assertNull($response->getCode());
+    }
+
+    public function testVoidWithInvalidReference()
+    {
+        $this->setMockHttpResponse('VoidFailure.txt');
+
+        $response = $this->request->send();
 
         $this->assertTransaction(
             $response,
             null,
-            'Transaction approved',
-            '000'
-        );
-    }
-
-    public function testVoidTokenTransaction(): void
-    {
-        $this->setMockHttpResponse('VoidTokenTransaction.txt');
-
-        $response = $this->request
-            ->setTransactionReference('21-0043505')
-            ->setAmount('0.01')
-            ->send();
-
-        $this->assertTransaction(
-            $response,
-            '22-0000000',
-            'Transaction approved',
-            '000'
-        );
-    }
-
-    public function testFailsVoid(): void
-    {
-        $this->setMockHttpResponse('ApplicationError.txt');
-
-        $response = $this->request
-            ->setAmount('0.01')
-            ->setTransactionReference('43-0000000')
-            ->send();
-
-        $this->assertTransaction(
-            $response,
+            'Transaction failed - gateway error code: 20112',
             null,
-            'Application error.',
-            '200',
             false
         );
+    }
+
+    public function testVoidWithTransactionId()
+    {
+        $this->request->setAuthorizationNumber('AUTH123');
+        $data = $this->request->getData();
+
+        $this->assertSame('AUTH123', $data['authorization_number']);
+    }
+
+    public function testVoidWithCard()
+    {
+        // Void requests don't include card data in the minimal structure
+        $this->request->setCard([
+            'number' => '4111111111111111',
+            'expiryMonth' => '12',
+            'expiryYear' => '2025',
+        ]);
+        $data = $this->request->getData();
+
+        // Card data is not included in void requests
+        $this->assertArrayNotHasKey('card_number', $data);
+        $this->assertArrayNotHasKey('expire_month', $data);
+        $this->assertArrayNotHasKey('expire_year', $data);
     }
 }

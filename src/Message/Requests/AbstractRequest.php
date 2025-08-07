@@ -1,11 +1,13 @@
 <?php
 
-namespace Futureecom\OmnipayTranzila\Message\Requests;
+namespace Omnipay\Tranzila\Message\Requests;
 
-use Futureecom\OmnipayTranzila\Message\Responses\RedirectResponse;
-use Futureecom\OmnipayTranzila\Message\Responses\Response;
+use JsonException;
+use Omnipay\Common\CreditCard;
 use Omnipay\Common\Exception\InvalidRequestException;
-use Omnipay\Common\Message\ResponseInterface;
+use Omnipay\Common\Exception\InvalidResponseException;
+use Omnipay\Common\Http\ClientInterface;
+use Omnipay\Tranzila\Message\Responses\AbstractResponse;
 
 /**
  * Class AbstractRequest.
@@ -15,36 +17,62 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     /**
      * @var string
      */
-    final public const GLUE = '-';
+    protected const BASE_URL = 'https://api.tranzila.com/v1';
 
     /**
-     * @var string
+     * @var ClientInterface
      */
-    protected const ENDPOINT = 'https://secure5.tranzila.com/cgi-bin/tranzila71u.cgi';
-
-    /**
-     * @var array
-     */
-    protected static $supportedCurrencies = [
-        'EUR' => '987',
-        'GBP' => '826',
-        'ILS' => '1',
-        'USD' => '2',
-    ];
+    protected $httpClient;
 
     /**
      * @inheritDoc
      */
-    public function sendData($data): ResponseInterface
+    public function __construct(ClientInterface $httpClient, $httpRequest)
     {
-        $response = $this->httpClient->request(
-            $this->getHttpMethod(),
-            $this->getEndpoint(),
-            $this->getHeaders(),
-            $this->prepareBody($data)
-        );
+        $this->httpClient = $httpClient;
+        parent::__construct($httpClient, $httpRequest);
+    }
 
-        return $this->createResponse($response->getBody()->getContents());
+    /**
+     * @inheritDoc
+     */
+    public function getHttpClient(): ClientInterface
+    {
+        return $this->httpClient;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function sendData($data): AbstractResponse
+    {
+        $timestamp = time();
+        $nonce = bin2hex(random_bytes(32));
+        $accessKey = hash_hmac('sha256', $this->getAppKey(), $this->getSecret() . $timestamp . $nonce);
+
+        $headers = [
+            'X-tranzila-api-app-key' => $this->getAppKey(),
+            'X-tranzila-api-request-time' => (string) $timestamp,
+            'X-tranzila-api-nonce' => $nonce,
+            'X-tranzila-api-access-token' => $accessKey,
+            'Content-Type' => 'application/json',
+        ];
+
+        try {
+            $httpResponse = $this->httpClient->request(
+                $this->getHttpMethod(),
+                $this->getEndpoint(),
+                $headers,
+                $this->prepareBody($data)
+            );
+        } catch (JsonException $e) {
+            throw new InvalidRequestException("Invalid fields sent - request data could not be encoded as JSON");
+        }
+        try {
+            return $this->createResponse($httpResponse->getBody()->getContents());
+        } catch (JsonException $e) {
+            throw new InvalidResponseException(sprintf("Invalid response sent. HTTP Status Code: %s; HTTP Reason: %s", $httpResponse->getStatusCode(), $httpResponse->getReasonPhrase()));
+        }
     }
 
     public function getHttpMethod(): string
@@ -52,235 +80,38 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
         return 'POST';
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getEndpoint(): string
     {
-        return static::ENDPOINT;
+        return static::BASE_URL . '/transaction/credit_card/create';
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function getHeaders(): array
     {
         return [
-            'content-type' => 'application/x-www-form-urlencoded',
+            'content-type' => 'application/json',
         ];
-    }
-
-    /**
-     * @param string $value
-     * @return $this
-     */
-    public function setCurrency($value): self
-    {
-        if ($value !== null) {
-            $value = strtoupper($value);
-        }
-
-        if ($currency = array_search($value, static::$supportedCurrencies, true)) {
-            $value = $currency;
-        }
-
-        return $this->setParameter('currency', $value);
-    }
-
-    public function getAddress(): ?string
-    {
-        return $this->getParameter('address');
-    }
-
-    /**
-     * @return $this
-     */
-    public function setAddress(?string $value): self
-    {
-        return $this->setParameter('address', $value);
-    }
-
-    public function getCity(): ?string
-    {
-        return $this->getParameter('city');
-    }
-
-    /**
-     * @return $this
-     */
-    public function setCity(?string $value): self
-    {
-        return $this->setParameter('city', $value);
-    }
-
-    public function getCompany(): ?string
-    {
-        return $this->getParameter('company');
-    }
-
-    /**
-     * @return $this
-     */
-    public function setCompany(?string $value): self
-    {
-        return $this->setParameter('company', $value);
-    }
-
-    public function getContact(): ?string
-    {
-        return $this->getParameter('contact');
-    }
-
-    /**
-     * @return $this
-     */
-    public function setContact(?string $value): self
-    {
-        return $this->setParameter('contact', $value);
-    }
-
-    public function getEmail(): ?string
-    {
-        return $this->getParameter('email');
-    }
-
-    /**
-     * @return $this
-     */
-    public function setEmail(?string $value): self
-    {
-        return $this->setParameter('email', $value);
-    }
-
-    public function getFax(): ?string
-    {
-        return $this->getParameter('fax');
-    }
-
-    /**
-     * @return $this
-     */
-    public function setFax(?string $value): self
-    {
-        return $this->setParameter('fax', $value);
-    }
-
-    public function getOldPrice(): ?string
-    {
-        return $this->getParameter('oldprice');
-    }
-
-    /**
-     * @return $this
-     */
-    public function setOldPrice(?string $value): self
-    {
-        return $this->setParameter('oldprice', $value);
-    }
-
-    public function getPDesc(): ?string
-    {
-        return $this->getParameter('pdesc');
-    }
-
-    /**
-     * @return $this
-     */
-    public function setPDesc(?string $value): self
-    {
-        return $this->setParameter('pdesc', $value);
-    }
-
-    public function getPhone(): ?string
-    {
-        return $this->getParameter('phone');
-    }
-
-    /**
-     * @return $this
-     */
-    public function setPhone(?string $value): self
-    {
-        return $this->setParameter('phone', $value);
-    }
-
-    public function getRemarks(): ?string
-    {
-        return $this->getParameter('remarks');
-    }
-
-    /**
-     * @return $this
-     */
-    public function setRemarks(?string $value): self
-    {
-        return $this->setParameter('remarks', $value);
-    }
-
-    public function getTranzilaToken(): ?string
-    {
-        return $this->getTranzilaTK();
-    }
-
-    public function setTranzilaPW(?string $value): self
-    {
-        return $this->setParameter('TranzilaPW', $value);
-    }
-
-    public function getTranzilaTK(): ?string
-    {
-        return $this->getParameter('TranzilaTK');
-    }
-
-    /**
-     * @return $this
-     */
-    public function setTranzilaToken(?string $value): self
-    {
-        return $this->setTranzilaTK($value);
-    }
-
-    /**
-     * @return $this
-     */
-    public function setTranzilaTK(?string $value): self
-    {
-        return $this->setParameter('TranzilaTK', $value);
     }
 
     /**
      * @inheritDoc
      * @throws InvalidRequestException
      */
-    public function getData(): array
+    abstract public function getData(): array;
+
+    public function getTerminalName(): ?string
     {
-        return array_merge($this->getDefaultParameters(), $this->getTransactionData());
-    }
-
-    public function getSupplier(): ?string
-    {
-        return $this->getParameter('supplier');
-    }
-
-    public function getTerminalPassword(): ?string
-    {
-        return $this->getTranzilaPW();
-    }
-
-    /**
-     * @throws InvalidRequestException
-     */
-    public function getCurrencyCode(): ?string
-    {
-        $currency = $this->getCurrency();
-        if ($currency === '' || $currency === null) {
-            return null;
-        }
-
-        if ($code = static::$supportedCurrencies[$currency] ?? false) {
-            return $code;
-        }
-
-        throw new InvalidRequestException("Unsupported '$currency' currency.");
+        return $this->getParameter('terminal_name');
     }
 
     public function getOrderId(): ?string
     {
-        return $this->getParameter('orderId');
+        return $this->getParameter('order_id');
     }
 
     public function getCcNo(): ?string
@@ -289,7 +120,7 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
             return $number;
         }
 
-        return $this->getParameter('ccno');
+        return $this->getParameter('cc_no');
     }
 
     public function getCredType(): ?string
@@ -303,7 +134,7 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
             return $expDate;
         }
 
-        return $this->getParameter('expdate');
+        return $this->getParameter('exp_date');
     }
 
     public function getMyCVV(): ?string
@@ -312,47 +143,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
             return $cvv;
         }
 
-        return $this->getParameter('mycvv');
-    }
-
-    public function getFpay(): ?string
-    {
-        return $this->getParameter('fpay');
-    }
-
-    public function getNpay(): ?string
-    {
-        return $this->getParameter('npay');
-    }
-
-    public function getSpay(): ?string
-    {
-        return $this->getParameter('spay');
-    }
-
-    public function getIndex(): ?string
-    {
-        return $this->getParameter('index');
-    }
-
-    public function getAuthNr(): ?string
-    {
-        return $this->getParameter('authnr');
-    }
-
-    public function getCreditPass(): ?string
-    {
-        return $this->getParameter('CreditPass');
-    }
-
-    public function getMyID(): ?string
-    {
-        return $this->getParameter('myid');
+        return $this->getParameter('my_cvv');
     }
 
     public function setTerminalPassword(?string $value): self
     {
-        return $this->setTranzilaPW($value);
+        return $this->setParameter('terminal_password', $value);
     }
 
     /**
@@ -360,12 +156,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
      */
     public function setMyCVV(?string $value): self
     {
-        return $this->setParameter('mycvv', $value);
+        return $this->setParameter('my_cvv', $value);
     }
 
     public function setMyID(?string $value): self
     {
-        return $this->setParameter('myid', $value);
+        return $this->setParameter('my_id', $value);
     }
 
     public function setCredType(?string $value): self
@@ -375,17 +171,357 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
 
     public function setCcNo(?string $value): self
     {
-        return $this->setParameter('ccno', $value);
+        return $this->setParameter('cc_no', $value);
     }
 
     public function setExpDate(?string $value): self
     {
-        return $this->setParameter('expdate', $value);
+        return $this->setParameter('exp_date', $value);
     }
 
-    public function setSupplier(?string $value): self
+    public function setTerminalName(?string $value): self
     {
-        return $this->setParameter('supplier', $value);
+        return $this->setParameter('terminal_name', $value);
+    }
+
+    public function getAuthorizationNumber(): ?string
+    {
+        return $this->getParameter('authorization_number');
+    }
+
+    public function setAuthorizationNumber(?string $value): self
+    {
+        return $this->setParameter('authorization_number', $value);
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->getParameter('token');
+    }
+
+    public function setToken($value): self
+    {
+        return $this->setParameter('token', $value);
+    }
+
+    public function getVerifyMode(): ?int
+    {
+        return $this->getParameter('verify_mode');
+    }
+
+    public function setVerifyMode(?int $value): self
+    {
+        return $this->setParameter('verify_mode', $value);
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->getParameter('description');
+    }
+
+    public function setDescription($value): self
+    {
+        return $this->setParameter('description', $value);
+    }
+
+    public function getTxnCurrencyCode(): ?string
+    {
+        return $this->getParameter('txn_currency_code');
+    }
+
+    public function setTxnCurrencyCode(?string $value): self
+    {
+        return $this->setParameter('txn_currency_code', $value);
+    }
+
+    public function getTxnType(): ?string
+    {
+        return $this->getParameter('txn_type');
+    }
+
+    public function setTxnType(?string $value): self
+    {
+        return $this->setParameter('txn_type', $value);
+    }
+
+    public function getExpiryMonth(): ?int
+    {
+        return $this->getParameter('expiry_month');
+    }
+
+    public function setExpiryMonth(?int $value): self
+    {
+        return $this->setParameter('expiry_month', $value);
+    }
+
+    public function getExpiryYear(): ?int
+    {
+        return $this->getParameter('expiry_year');
+    }
+
+    public function setExpiryYear(?int $value): self
+    {
+        return $this->setParameter('expiry_year', $value);
+    }
+
+    public function getCvv(): ?string
+    {
+        return $this->getParameter('cvv');
+    }
+
+    public function setCvv(?string $value): self
+    {
+        return $this->setParameter('cvv', $value);
+    }
+
+    public function getCardHolderId(): ?int
+    {
+        return $this->getParameter('card_holder_id');
+    }
+
+    public function setCardHolderId(?int $value): self
+    {
+        return $this->setParameter('card_holder_id', $value);
+    }
+
+    public function getCardNumber(): ?string
+    {
+        return $this->getParameter('card_number');
+    }
+
+    public function setCardNumber(?string $value): self
+    {
+        return $this->setParameter('card_number', $value);
+    }
+
+    public function getPaymentPlan(): ?int
+    {
+        return $this->getParameter('payment_plan');
+    }
+
+    public function setPaymentPlan(?int $value): self
+    {
+        return $this->setParameter('payment_plan', $value);
+    }
+
+    public function getInstallmentsNumber(): ?int
+    {
+        return $this->getParameter('installments_number');
+    }
+
+    public function setInstallmentsNumber(?int $value): self
+    {
+        return $this->setParameter('installments_number', $value);
+    }
+
+    public function getFirstInstallmentAmount(): ?float
+    {
+        return $this->getParameter('first_installment_amount');
+    }
+
+    public function setFirstInstallmentAmount(?float $value): self
+    {
+        return $this->setParameter('first_installment_amount', $value);
+    }
+
+    public function getOtherInstallmentsAmount(): ?float
+    {
+        return $this->getParameter('other_installments_amount');
+    }
+
+    public function setOtherInstallmentsAmount(?float $value): self
+    {
+        return $this->setParameter('other_installments_amount', $value);
+    }
+
+    public function getReferenceTxnId(): ?int
+    {
+        return $this->getParameter('reference_txn_id');
+    }
+
+    public function setReferenceTxnId(?int $value): self
+    {
+        return $this->setParameter('reference_txn_id', $value);
+    }
+
+    public function getClientExternalId(): ?string
+    {
+        return $this->getParameter('client_external_id');
+    }
+
+    public function setClientExternalId(?string $value): self
+    {
+        return $this->setParameter('client_external_id', $value);
+    }
+
+    public function getClientName(): ?string
+    {
+        return $this->getParameter('client_name');
+    }
+
+    public function setClientName(?string $value): self
+    {
+        return $this->setParameter('client_name', $value);
+    }
+
+    public function getClientContactPerson(): ?string
+    {
+        return $this->getParameter('client_contact_person');
+    }
+
+    public function setClientContactPerson(?string $value): self
+    {
+        return $this->setParameter('client_contact_person', $value);
+    }
+
+    public function getClientId(): ?int
+    {
+        return $this->getParameter('client_id');
+    }
+
+    public function setClientId(?int $value): self
+    {
+        return $this->setParameter('client_id', $value);
+    }
+
+    public function getClientEmail(): ?string
+    {
+        return $this->getParameter('client_email');
+    }
+
+    public function setClientEmail(?string $value): self
+    {
+        return $this->setParameter('client_email', $value);
+    }
+
+    public function getClientPhoneCountryCode(): ?string
+    {
+        return $this->getParameter('client_phone_country_code');
+    }
+
+    public function setClientPhoneCountryCode(?string $value): self
+    {
+        return $this->setParameter('client_phone_country_code', $value);
+    }
+
+    public function getClientPhoneAreaCode(): ?string
+    {
+        return $this->getParameter('client_phone_area_code');
+    }
+
+    public function setClientPhoneAreaCode(?string $value): self
+    {
+        return $this->setParameter('client_phone_area_code', $value);
+    }
+
+    public function getClientPhoneNumber(): ?string
+    {
+        return $this->getParameter('client_phone_number');
+    }
+
+    public function setClientPhoneNumber(?string $value): self
+    {
+        return $this->setParameter('client_phone_number', $value);
+    }
+
+    public function getClientAddressLine1(): ?string
+    {
+        return $this->getParameter('client_address_line_1');
+    }
+
+    public function setClientAddressLine1(?string $value): self
+    {
+        return $this->setParameter('client_address_line_1', $value);
+    }
+
+    public function getClientAddressLine2(): ?string
+    {
+        return $this->getParameter('client_address_line_2');
+    }
+
+    public function setClientAddressLine2(?string $value): self
+    {
+        return $this->setParameter('client_address_line_2', $value);
+    }
+
+    public function getClientCity(): ?string
+    {
+        return $this->getParameter('client_city');
+    }
+
+    public function setClientCity(?string $value): self
+    {
+        return $this->setParameter('client_city', $value);
+    }
+
+    public function getClientCountryCode(): ?string
+    {
+        return $this->getParameter('client_country_code');
+    }
+
+    public function setClientCountryCode(?string $value): self
+    {
+        return $this->setParameter('client_country_code', $value);
+    }
+
+    public function getClientZip(): ?string
+    {
+        return $this->getParameter('client_zip');
+    }
+
+    public function setClientZip(?string $value): self
+    {
+        return $this->setParameter('client_zip', $value);
+    }
+
+    public function getItems(): ?array
+    {
+        return $this->getParameter('items');
+    }
+
+    public function setItems($value): self
+    {
+        return $this->setParameter('items', $value);
+    }
+
+    public function getUserDefinedFields(): ?array
+    {
+        return $this->getParameter('user_defined_fields');
+    }
+
+    public function setUserDefinedFields(?array $value): self
+    {
+        return $this->setParameter('user_defined_fields', $value);
+    }
+
+    public function getResponseLanguage(): ?string
+    {
+        return $this->getParameter('response_language');
+    }
+
+    public function setResponseLanguage(?string $value): self
+    {
+        return $this->setParameter('response_language', $value);
+    }
+
+    public function getCreatedByUser(): ?string
+    {
+        return $this->getParameter('created_by_user');
+    }
+
+    public function setCreatedByUser(?string $value): self
+    {
+        return $this->setParameter('created_by_user', $value);
+    }
+
+    public function getCreatedBySystem(): ?string
+    {
+        return $this->getParameter('created_by_system');
+    }
+
+    public function setCreatedBySystem(?string $value): self
+    {
+        return $this->setParameter('created_by_system', $value);
     }
 
     public function getTranzilaPK(): ?string
@@ -404,41 +540,9 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
     /**
      * @return $this
      */
-    public function setFpay(?string $value): self
-    {
-        return $this->setParameter('fpay', $value);
-    }
-
-    /**
-     * @return $this
-     */
-    public function setSpay(?string $value): self
-    {
-        return $this->setParameter('spay', $value);
-    }
-
-    /**
-     * @return $this
-     */
-    public function setNpay(?string $value): self
-    {
-        return $this->setParameter('npay', $value);
-    }
-
-    /**
-     * @return $this
-     */
     public function setSum(?string $value): self
     {
-        return $this->setAmount($value);
-    }
-
-    /**
-     * @throws InvalidRequestException
-     */
-    public function getSum(): string
-    {
-        return $this->getAmount();
+        return $this->setParameter('sum', $value);
     }
 
     /**
@@ -447,50 +551,12 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
      */
     public function setTransactionReference($value): self
     {
-        if (is_string($value)) {
-            $arr = explode(static::GLUE, $value);
-
-            if (count($arr) === 2) {
-                $this->setIndex($arr[0])->setAuthNr($arr[1]);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function setAuthNr(?string $value): self
-    {
-        return $this->setParameter('authnr', $value);
-    }
-
-    /**
-     * @return $this
-     */
-    public function setIndex(?string $value): self
-    {
-        return $this->setParameter('index', $value);
+        return $this->setParameter('transaction_reference', $value);
     }
 
     public function getTransactionReference(): ?string
     {
-        $arr = array_filter([$this->getIndex(), $this->getAuthNr()]);
-
-        if (count($arr) < 2) {
-            return null;
-        }
-
-        return implode(static::GLUE, $arr);
-    }
-
-    /**
-     * @return $this
-     */
-    public function setCreditPass(?string $value): self
-    {
-        return $this->setParameter('CreditPass', $value);
+        return $this->getParameter('transaction_reference');
     }
 
     public function hasParameters(string ...$keys): bool
@@ -506,72 +572,90 @@ abstract class AbstractRequest extends \Omnipay\Common\Message\AbstractRequest
 
     public function setOrderId(?string $value): self
     {
-        return $this->setParameter('orderId', $value);
+        return $this->setParameter('order_id', $value);
     }
 
-    public function getTranzilaPW(): ?string
+    public function getTerminalPassword(): ?string
     {
-        return $this->getParameter('TranzilaPW');
+        return $this->getParameter('terminal_password');
     }
 
-    protected function prepareBody(array $data): string
+    public function getAppKey(): ?string
     {
-        return http_build_query($data, '', '&');
+        return $this->getParameter('app_key');
     }
 
-    protected function createResponse(string $content): Response
+    public function setAppKey(?string $value): self
     {
-        return $this->response = new Response($this, $content);
+        return $this->setParameter('app_key', $value);
+    }
+
+    public function getSecret(): ?string
+    {
+        return $this->getParameter('secret');
+    }
+
+    public function setSecret(?string $value): self
+    {
+        return $this->setParameter('secret', $value);
     }
 
     /**
-     * @throws InvalidRequestException
-     * @return array{response_return_format: string, supplier?: string, TranzilaPW?: string, currency?: string, orderId?: string, sum?: string, ccno?: string, cred_type?: string, expdate?: string, mycvv?: string, TranzilaTK?: string, fpay?: string, npay?: string, spay?: string, index?: string, authnr?: string, CreditPass?: string, myid?: string}
+     * @inheritDoc
+     */
+    public function getCard(): ?CreditCard
+    {
+        return $this->getParameter('card');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setCard($value): self
+    {
+        return $this->setParameter('card', $value);
+    }
+
+    protected function getTransactionData(): array
+    {
+        return $this->getData();
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @throws \Omnipay\Common\Exception\InvalidRequestException
+     */
+    protected function prepareBody($data): string
+    {
+        try {
+            return json_encode($data, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            throw new \Omnipay\Common\Exception\InvalidRequestException(
+                'Failed to encode request data as JSON: ' . $e->getMessage(),
+                $e->getCode(),
+                $e
+            );
+        }
+    }
+
+    /**
+     * Create a response object from the raw response data.
+     *
+     * @param string $data The raw response data
+     * @return AbstractResponse A concrete response instance
+     */
+    abstract protected function createResponse(string $data): AbstractResponse;
+
+    /**
+     * @return array<string, mixed>
      */
     protected function getDefaultParameters(): array
     {
-        return array_filter([
-            // response format
-            'response_return_format' => 'json',
-
-            // account data
-            'supplier' => $this->getSupplier(),
-            'TranzilaPW' => $this->getTranzilaPW() ?: null,
-
-            // basic transaction data
-            'currency' => $this->getCurrencyCode(),
-            'orderId' => $this->getOrderId(),
-            'sum' => $this->getAmount(),
-
-            // credit card data
-            'ccno' => $this->getCcNo(),
-            'cred_type' => $this->getCredType(),
-            'expdate' => $this->getExpDate(),
-            'mycvv' => $this->getMyCVV(),
-
-            //card token
-            'TranzilaTK' => $this->getTranzilaTK(),
-
-            // transaction with installments
-            'fpay' => $this->getFpay(),
-            'npay' => $this->getNpay(),
-            'spay' => $this->getSpay(),
-
-            // others...
-            'index' => $this->getIndex(),
-            'authnr' => $this->getAuthNr(),
-            'CreditPass' => $this->getCreditPass(),
-            'myid' => $this->getMyID(),
-        ]);
-    }
-
-    /**
-     * Return transaction data specified to given transaction.
-     */
-    abstract protected function getTransactionData(): array;
-
-    protected function createRedirectResponse(): RedirectResponse
-    {
-        return $this->response = new RedirectResponse($this);
+        return [
+            'terminal_name' => $this->getTerminalName(),
+            'terminal_password' => $this->getTerminalPassword(),
+            'app_key' => $this->getAppKey(),
+            // 'secret' removed for security
+        ];
     }
 }

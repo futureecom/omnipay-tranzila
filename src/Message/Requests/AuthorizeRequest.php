@@ -1,45 +1,74 @@
 <?php
 
-namespace Futureecom\OmnipayTranzila\Message\Requests;
+namespace Omnipay\Tranzila\Message\Requests;
 
-use Futureecom\OmnipayTranzila\Message\Responses\Response;
-use Omnipay\Common\Exception\InvalidRequestException;
-use Omnipay\Common\Message\ResponseInterface;
+use Omnipay\Tranzila\Message\Responses\AbstractResponse;
+use Omnipay\Tranzila\Message\Responses\Response;
 
-/**
- * Class AuthorizeRequest.
- */
 class AuthorizeRequest extends AbstractRequest
 {
-    /**
-     * @inheritDoc
-     * @return array{tranmode: string}
-     */
-    public function getTransactionData(): array
+    public function getData(): array
     {
-        return [
-            'tranmode' => 'V',
+        $this->validate('app_key', 'secret', 'terminal_name', 'amount', 'currency');
+        $this->validateTokenOrCard();
+
+        $item = [
+            'name' => $this->getDescription() ?: 'Authorization',
+            'type' => 'I',
+            'unit_price' => (float) $this->getAmount(),
+            'currency_code' => $this->getCurrency(),
+            'units_number' => 1,
         ];
+
+        $data = [
+            'terminal_name' => $this->getTerminalName(),
+            'txn_type' => 'verify',
+            'verify_mode' => $this->getVerifyMode() ?: 5,
+            'items' => [ $item ],
+        ];
+
+        // If using a token, don't require card details
+        if ($this->getToken()) {
+            // Place token in card_number, and set random expiry/cvv
+            $data['card_number'] = $this->getToken();
+            $data['expire_month'] = $this->getExpiryMonth();
+            $data['expire_year'] = $this->getExpiryYear();
+            $data['cvv'] = (string) random_int(100, 999);
+        } else {
+            // Require card details when not using token
+            $this->validate('card');
+            $data['expire_month'] = (int) $this->getCard()->getExpiryMonth();
+            $data['expire_year'] = (int) $this->getCard()->getExpiryYear();
+            $data['cvv'] = (string) $this->getCard()->getCvv();
+            $data['card_number'] = (string) $this->getCard()->getNumber();
+        }
+
+        return $data;
     }
 
     /**
-     * @return Response&ResponseInterface
-     * @throws InvalidRequestException
+     * Validate that either token or card details are provided, but not both.
      */
-    public function sendData($data): ResponseInterface
+    protected function validateTokenOrCard()
     {
-        if ($this->hasParameters('TranzilaTK')) {
-            $this->validate('expdate');
+        $hasToken = !empty($this->getToken());
+        $hasCard = $this->getCard() !== null;
 
-            return parent::sendData($data);
+        if (!$hasToken && !$hasCard) {
+            throw new \Omnipay\Common\Exception\InvalidRequestException(
+                'Either token or card details must be provided for authorization'
+            );
         }
 
-        if ($this->hasParameters('ccno')) {
-            $this->validate('expdate', 'mycvv');
-
-            return parent::sendData($data);
+        if ($hasToken && $hasCard) {
+            throw new \Omnipay\Common\Exception\InvalidRequestException(
+                'Cannot provide both token and card details for authorization'
+            );
         }
+    }
 
-        return $this->createRedirectResponse();
+    protected function createResponse(string $data): AbstractResponse
+    {
+        return $this->response = new Response($this, $data);
     }
 }

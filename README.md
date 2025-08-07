@@ -1,179 +1,385 @@
-# Omnipay: Tranzila
+# Omnipay Tranzila
 
-**Tranzila driver for the Omnipay PHP payment processing library**
+Tranzila gateway for Omnipay payment processing library.
 
-![Build](https://github.com/futureecom/omnipay-tranzila/workflows/Build/badge.svg?branch=master) 
-[![Latest Stable Version](https://poser.pugx.org/futureecom/omnipay-tranzila/version.png)](https://packagist.org/packages/futureecom/omnipay-tranzila)
-[![Total Downloads](https://poser.pugx.org/futureecom/omnipay-tranzila/d/total.png)](https://packagist.org/packages/futureecom/omnipay-tranzila)
+**Note:** This package uses the modern Tranzila API. Redirect functionality has been removed in favor of the handshake-based iframe integration for better PCI compliance. For advanced integration details, see the official Tranzila documentation.
 
-[Omnipay](https://github.com/thephpleague/omnipay) is a framework agnostic, multi-gateway payment
-processing library for PHP. This package implements Tranzila support for Omnipay.
+## Documentation
+
+- Official Tranzila API docs: [https://docs.tranzila.com/](https://docs.tranzila.com/)
+- Omnipay general usage: [https://github.com/thephpleague/omnipay](https://github.com/thephpleague/omnipay)
 
 ## Installation
 
-Omnipay is installed via [Composer](http://getcomposer.org/). To install, simply require `league/omnipay` and `futureecom/omnipay-tranzila` with Composer:
+Omnipay is installed via [Composer](http://getcomposer.org/). To install, simply add it to your `composer.json` file:
 
+```json
+{
+    "require": {
+        "futureecom/omnipay-tranzila": "~4.0"
+    }
+}
 ```
-composer require league/omnipay futureecom/omnipay-tranzila
+
+And run composer to update your dependencies:
+
+```bash
+$ composer update
 ```
 
 ## Basic Usage
 
+The following gateways are provided by this package:
+
+* Tranzila
+
 For general usage instructions, please see the main [Omnipay](https://github.com/thephpleague/omnipay) repository.
 
-The following gateways are supported by this package:
-* Authorize
-* Capture
-* Purchase
-* Refund
-* Void
-
-### Tranzila Documentation
-
-* [Hebrew](http://doctr6.interspace.net/)
-* [English](http://tranzila:express2017!secret@doctren.interspace.net/?type=1)
-
-We are not the authors of the Tranzila API! 
-Please direct any questions about Tranzila to Tranzila Support.
-
-### Supported currencies
-
-Tranzila supports only four currencies:
-- EUR
-- GBP
-- ILS
-- USD
-
-If you will use an unsupported currency, you'll  receive an `InvalidRequestException`.
-
-## Test Mode
-
-The test Tranzila account can be created only by Tranzila Support. Please contact them to create your 'testing terminal'.
-
-You cannot perform authorization on your test account and purchases can be only made up to 10 ILS. When you will try to do either, your request will be refused.
-
-
-# Authorize
-
-Payment authorization can be done in two ways.
-
-First is by transferring card data (not recommended if the site does not meet PCI standards).
-Second is to redirect customer to secure payment page (iframe).
+### Authorization
 
 ```php
-<?php
+use Omnipay\Omnipay;
 
-use Futureecom\OmnipayTranzila\TranzilaGateway;
+$gateway = Omnipay::create('Tranzila');
+$gateway->setAppKey('your_app_key');
+$gateway->setSecret('your_secret');
+$gateway->setTerminalName('your_terminal_name');
 
-/** @var TranzilaGateway $gateway */
 $response = $gateway->authorize([
     'amount' => '10.00',
     'currency' => 'ILS',
-    'myid' => '12345678',
     'card' => [
-        'ccno' => '4444333322221111',
-        'expdate' => '1225',
-        'mycvv' => '1234',
-    ],
-])->send();
-```
-
-To generate a redirect link, send the above request skipping the `card` part. In response you will receive an url to make the payment.
-
-```php
-<?php
-
-use Futureecom\OmnipayTranzila\TranzilaGateway;
-
-/** @var TranzilaGateway $gateway */
-$response = $gateway->authorize([
-    'amount' => '10.00',
-    'currency' => 'ILS',
-    'myid' => '12345678',
+        'number' => '4111111111111111',
+        'expiryMonth' => '12',
+        'expiryYear' => '2025',
+        'cvv' => '123'
+    ]
 ])->send();
 
-if ($response->isRedirect()) {
-    echo $response->getRedirectUrl(); // https://direct.tranzila.com/terminal_name/iframe.php?tranmode=V&currency=1&sum=1.00
+if ($response->isSuccessful()) {
+    // authorization was successful: update database
+    $transactionReference = $response->getTransactionReference();
+    print_r($response);
+} else {
+    // authorization failed: display message to customer
+    echo $response->getMessage();
 }
 ```
 
-A link will be generated that can be used to redirect the customer or display in the iframe.
+### Capture
 
-# Capture
+Capture operations require all 4 pieces of information:
 
-To capture a payment, you must provide transaction reference. 
-It is built of two elements that we receive in response to payment authorization - 
-Index and AuthNr separated by `-` for example: `22-000000`.
-
-Warning: If redirect URL was used to authorize the payment, `transaction_reference` from notify url will must be used.
-
+#### Method 1: Transaction Reference + Authorization Number + Token + Expiry
 ```php
-<?php
+use Omnipay\Omnipay;
 
-use Futureecom\OmnipayTranzila\TranzilaGateway;
+$gateway = Omnipay::create('Tranzila');
+$gateway->setAppKey('your_app_key');
+$gateway->setSecret('your_secret');
+$gateway->setTerminalName('your_terminal_name');
 
-/** @var TranzilaGateway $gateway */
 $response = $gateway->capture([
-    'amount' => '1',
-    'transaction_reference' => '22-000000',
+    'amount' => '10.00',
+    'currency' => 'ILS',
+    'transactionReference' => '12345', // The transaction reference from the authorization
+    'authorizationNumber' => 'AUTH123', // Authorization number from the original transaction
+    'token' => 'U99e9abcd81c2ca4444', // Token from the original transaction
+    'expiryMonth' => 12,
+    'expiryYear' => 2025
 ])->send();
+
+if ($response->isSuccessful()) {
+    // capture was successful: update database
+    $transactionReference = $response->getTransactionReference();
+    print_r($response);
+} else {
+    // capture failed: display message to customer
+    echo $response->getMessage();
+}
 ```
 
-# Purchase
+#### Method 2: Transaction Reference + Authorization Number + Credit Card Details
+```php
+use Omnipay\Omnipay;
 
-Purchase is carried out in the same way as authorization.
+$gateway = Omnipay::create('Tranzila');
+$gateway->setAppKey('your_app_key');
+$gateway->setSecret('your_secret');
+$gateway->setTerminalName('your_terminal_name');
+
+$response = $gateway->capture([
+    'amount' => '10.00',
+    'currency' => 'ILS',
+    'transactionReference' => '12345', // The transaction reference from the authorization
+    'authorizationNumber' => 'AUTH123', // Authorization number from the original transaction
+    'card' => [
+        'number' => '4111111111111111',
+        'expiryMonth' => '12',
+        'expiryYear' => '2025',
+        'cvv' => '123'
+    ]
+])->send();
+
+if ($response->isSuccessful()) {
+    // capture was successful: update database
+    $transactionReference = $response->getTransactionReference();
+    print_r($response);
+} else {
+    // capture failed: display message to customer
+    echo $response->getMessage();
+}
+```
+
+### Void
 
 ```php
-<?php
+use Omnipay\Omnipay;
 
-use Futureecom\OmnipayTranzila\TranzilaGateway;
+$gateway = Omnipay::create('Tranzila');
+$gateway->setAppKey('your_app_key');
+$gateway->setSecret('your_secret');
+$gateway->setTerminalName('your_terminal_name');
 
-/** @var TranzilaGateway $gateway */
+$response = $gateway->void([
+    'transactionReference' => '12345' // The transaction reference to void
+])->send();
+
+if ($response->isSuccessful()) {
+    // void was successful: update database
+    $transactionReference = $response->getTransactionReference();
+    print_r($response);
+} else {
+    // void failed: display message to customer
+    echo $response->getMessage();
+}
+```
+
+> **Note:** Void operations may not work on Tranzila test accounts. This is a limitation of the Tranzila sandbox environment. For more details, see the [Tranzila API documentation](https://docs.tranzila.com/).
+
+> **Note:** Void responses have a simpler format than other transactions. A successful void returns `{"error_code":0,"message":"Success"}` without a `transaction_result` object.
+
+### Verification
+
+```php
+use Omnipay\Omnipay;
+
+$gateway = Omnipay::create('Tranzila');
+$gateway->setAppKey('your_app_key');
+$gateway->setSecret('your_secret');
+$gateway->setTerminalName('your_terminal_name');
+
+$response = $gateway->verify([
+    'amount' => '10.00',
+    'currency' => 'ILS',
+    'card' => [
+        'number' => '4111111111111111',
+        'expiryMonth' => '12',
+        'expiryYear' => '2025',
+        'cvv' => '123'
+    ]
+])->send();
+
+if ($response->isSuccessful()) {
+    // verification was successful: update database
+    $transactionReference = $response->getTransactionReference();
+    print_r($response);
+} else {
+    // verification failed: display message to customer
+    echo $response->getMessage();
+}
+```
+
+### Purchase
+
+```php
+use Omnipay\Omnipay;
+
+$gateway = Omnipay::create('Tranzila');
+$gateway->setAppKey('your_app_key');
+$gateway->setSecret('your_secret');
+$gateway->setTerminalName('your_terminal_name');
+
 $response = $gateway->purchase([
     'amount' => '10.00',
     'currency' => 'ILS',
-    'myid' => '12345678',
     'card' => [
-        'ccno' => '4444333322221111',
-        'expdate' => '1225',
-        'mycvv' => '1234',
-    ],
+        'number' => '4111111111111111',
+        'expiryMonth' => '12',
+        'expiryYear' => '2025',
+        'cvv' => '123'
+    ]
 ])->send();
+
+if ($response->isSuccessful()) {
+    // payment was successful: update database
+    print_r($response);
+} else {
+    // payment failed: display message to customer
+    echo $response->getMessage();
+}
 ```
 
-# Refund
+### Refund
 
-Tranzila also supports returns. However, you can only do return on the payment once. Therefore, partial refunds are not supported.
-It works in the same way as authorization and purchase. While doing refund, you can use TranzilaTK (from notify url) instead of credit card details.
+Refund operations support three different methods:
 
+#### Method 1: Authorization Number + Transaction Reference
 ```php
-<?php
+use Omnipay\Omnipay;
 
-use Futureecom\OmnipayTranzila\TranzilaGateway;
+$gateway = Omnipay::create('Tranzila');
+$gateway->setAppKey('your_app_key');
+$gateway->setSecret('your_secret');
+$gateway->setTerminalName('your_terminal_name');
 
-/** @var TranzilaGateway $gateway */
 $response = $gateway->refund([
-    'amount' => '5.00',
+    'amount' => '10.00',
     'currency' => 'ILS',
-    'transaction_reference' => '22-000000',
+    'transactionReference' => '12345',
+    'authorizationNumber' => 'AUTH123'
 ])->send();
+
+if ($response->isSuccessful()) {
+    // refund was successful: update database
+    print_r($response);
+} else {
+    // refund failed: display message to customer
+    echo $response->getMessage();
+}
 ```
 
-# Void
+#### Method 2: Token + Expiry
+```php
+use Omnipay\Omnipay;
 
-Cancelling a transaction is also supported by Tranzila. To do so, all we have to send is a reference number.
+$gateway = Omnipay::create('Tranzila');
+$gateway->setAppKey('your_app_key');
+$gateway->setSecret('your_secret');
+$gateway->setTerminalName('your_terminal_name');
+
+$response = $gateway->refund([
+    'amount' => '10.00',
+    'currency' => 'ILS',
+    'token' => 'U99e9abcd81c2ca4444',
+    'expiryMonth' => 12,
+    'expiryYear' => 2025
+])->send();
+
+if ($response->isSuccessful()) {
+    // refund was successful: update database
+    print_r($response);
+} else {
+    // refund failed: display message to customer
+    echo $response->getMessage();
+}
+```
+
+#### Method 3: Credit Card Details
+```php
+use Omnipay\Omnipay;
+
+$gateway = Omnipay::create('Tranzila');
+$gateway->setAppKey('your_app_key');
+$gateway->setSecret('your_secret');
+$gateway->setTerminalName('your_terminal_name');
+
+$response = $gateway->refund([
+    'amount' => '10.00',
+    'currency' => 'ILS',
+    'card' => [
+        'number' => '4111111111111111',
+        'expiryMonth' => '12',
+        'expiryYear' => '2025',
+        'cvv' => '123'
+    ]
+])->send();
+
+if ($response->isSuccessful()) {
+    // refund was successful: update database
+    print_r($response);
+} else {
+    // refund failed: display message to customer
+    echo $response->getMessage();
+}
+```
+
+## Setting the Terminal Password
+
+Some Tranzila API operations (such as the handshake/iframe token request) require both the terminal name and the terminal password. You can set the terminal password using:
 
 ```php
-<?php
-
-use Futureecom\OmnipayTranzila\TranzilaGateway;
-
-/** @var TranzilaGateway $gateway */
-$response = $gateway->void([
-    'transaction_reference' => '22-000000',
-    'TranzilaTK' => 'DdyniRvcUGHBj9xO', // TranzilaToken
-])->send();
+$gateway->setTerminalPassword('your_terminal_password');
 ```
+
+- For most payment operations (authorize, purchase, capture, refund, void, verify), only the terminal name is required.
+- For the handshake (iframe token) operation, **both** terminal name and terminal password are required.
+
+### Example: Handshake with Terminal Password
+
+```php
+use Omnipay\Omnipay;
+
+$gateway = Omnipay::create('Tranzila');
+$gateway->setTerminalName('your_terminal_name');
+$gateway->setTerminalPassword('your_terminal_password');
+
+$response = $gateway->handshake([
+    'amount' => '10.00',
+])->send();
+
+if ($response->isSuccessful()) {
+    $handshakeToken = $response->getHandshakeToken();
+    print_r($response->getResponseData());
+} else {
+    echo $response->getMessage();
+}
+```
+
+### Handshake (Iframe Token)
+
+```php
+use Omnipay\Omnipay;
+
+$gateway = Omnipay::create('Tranzila');
+$gateway->setTerminalName('your_terminal_name');
+$gateway->setTerminalPassword('your_terminal_password');
+
+$response = $gateway->handshake([
+    'amount' => '10.00',
+])->send();
+
+if ($response->isSuccessful()) {
+    // Get the handshake token for iframe usage
+    $handshakeToken = $response->getHandshakeToken();
+    // Or get a structured array with all details
+    $data = $response->getResponseData();
+    print_r($data);
+} else {
+    // handshake failed: display message to customer
+    echo $response->getMessage();
+}
+```
+
+## Supported Methods
+
+This gateway supports the following payment methods:
+
+- `authorize()` - Authorize a payment
+- `capture()` - Capture a previously authorized payment (requires transaction reference, authorization number, and either token+expiry or card details)
+- `purchase()` - Authorize and capture a payment in one step
+- `refund()` - Refund a payment (supports authorization number, token, or card details)
+- `void()` - Void a payment
+- `verify()` - Verify a card without charging
+- `handshake()` - Get iframe token for secure payment form
+
+## Supported Currencies
+
+The gateway supports the following currencies:
+- ILS (Israeli Shekel)
+- USD (US Dollar)
+- EUR (Euro)
+- GBP (British Pound)
 
 ## Support
 
@@ -181,5 +387,13 @@ If you are having general issues with Omnipay, we suggest posting on
 [Stack Overflow](http://stackoverflow.com/). Be sure to add the
 [omnipay tag](http://stackoverflow.com/questions/tagged/omnipay) so it can be easily found.
 
-If you believe you have found a bug, please report it using the [GitHub issue tracker](https://github.com/futureecom/omnipay-tranzila/issues),
-or better yet, fork the library and submit a pull request.
+If you want to keep up to date with release announcements and discuss the project
+in general, please join the [mailing list](https://groups.google.com/forum/#!forum/omnipay) and [follow us on Twitter](https://twitter.com/thephpleague).
+
+## Security
+
+If you discover any security related issues, please email security@omnipay.com instead of using the issue tracker.
+
+## License
+
+The MIT License (MIT). Please see [License File](LICENSE) for more information.

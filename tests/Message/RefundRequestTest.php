@@ -1,121 +1,158 @@
 <?php
 
-namespace Tests\Message;
+namespace Omnipay\Tranzila\Tests\Message;
 
-use Futureecom\OmnipayTranzila\Message\Requests\RefundRequest;
-use Futureecom\OmnipayTranzila\Message\Responses\Response;
 use Omnipay\Tests\TestCase;
-use Tests\Concerns\TransactionStatus;
+use Omnipay\Tranzila\Message\Requests\RefundRequest;
+use Omnipay\Tranzila\Tests\Concerns\TransactionStatus;
 
-/**
- * Class RefundRequestTest.
- */
 class RefundRequestTest extends TestCase
 {
     use TransactionStatus;
 
-    /**
-     * @var RefundRequest
-     */
-    private $request;
+    protected RefundRequest $request;
 
-    /**
-     * @inheritDoc
-     */
-    public function setUp(): void
+    protected function setUp(): void
     {
-        $this->request = new RefundRequest(
-            $this->getHttpClient(),
-            $this->getHttpRequest()
-        );
+        parent::setUp();
+
+        $this->request = new RefundRequest($this->getHttpClient(), $this->getHttpRequest());
         $this->request->initialize([
-            'supplier' => 'test',
+            'app_key' => 'test_app_key',
+            'secret' => 'test_secret',
+            'terminal_name' => 'test_terminal',
+            'amount' => '10.00',
+            'currency' => 'ILS',
+            'transaction_reference' => '12345',
+            'authorization_number' => '0000000',
+            'card' => new \Omnipay\Common\CreditCard([
+                'number' => '4111111111111111',
+                'expiryMonth' => '12',
+                'expiryYear' => '2025',
+                'cvv' => '123',
+            ]),
         ]);
     }
 
-    public function testSendMessage(): void
+    public function testGetData()
     {
-        self::assertInstanceOf(Response::class, $this->request->send());
+        $data = $this->request->getData();
+
+        $this->assertEquals('test_terminal', $data['terminal_name']);
+        $this->assertEquals('credit', $data['txn_type']);
+        $this->assertEquals(12345, $data['reference_txn_id']);
+        $this->assertEquals('0000000', $data['authorization_number']);
+        // Card details are not included when authorization number is provided
+        $this->assertEquals(10.0, $data['items'][0]['unit_price']);
+        $this->assertEquals('Refund', $data['items'][0]['name']);
+        $this->assertEquals('ILS', $data['items'][0]['currency_code']);
     }
 
-    public function testPartialRefund(): void
+    public function testSendData()
     {
-        $this->setMockHttpResponse('PartialRefund.txt');
+        $this->setMockHttpResponse('RefundSuccess.txt');
 
-        $response = $this->request->setAmount('50')
-            ->setCurrency('ILS')
-            ->setCredType('1')
-            ->setCcNo('12312312')
-            ->setTransactionReference('48-0000000')
-            ->send();
+        $response = $this->request->send();
 
-        $this->assertTransaction(
-            $response,
-            '52-0000000',
-            'Transaction approved',
-            '000'
-        );
+        $this->assertTrue($response->isSuccessful());
+        $this->assertEquals('216', $response->getTransactionReference());
+        $this->assertEquals('Success', $response->getMessage());
+        $this->assertEquals('000', $response->getCode());
     }
 
-    public function testPartiallyRefundedTwice(): void
+    public function testRefundWithInvalidReference()
     {
-        $this->setMockHttpResponse('PartiallyRefundedTwice.txt');
+        $this->setMockHttpResponse('RefundFailure.txt');
 
-        $response = $this->request->setAmount('50')
-            ->setCurrency('ILS')
-            ->setCredType('1')
-            ->setCcNo('12312312')
-            ->setTransactionReference('48-0000000')
-            ->send();
+        $response = $this->request->send();
 
         $this->assertTransaction(
             $response,
             null,
-            'Already Credited',
-            '20020',
+            'Transaction failed - gateway error code: 23002, processor code: 002',
+            '002',
             false
         );
     }
 
-    public function testRefund(): void
+    public function testRefundWithCard()
     {
-        $this->setMockHttpResponse('Refund.txt');
+        // Remove authorization number to test card-only scenario
+        $this->request->setAuthorizationNumber(null);
+        $this->request->setCard(new \Omnipay\Common\CreditCard([
+            'number' => '4111111111111111',
+            'expiryMonth' => '12',
+            'expiryYear' => '2025',
+            'cvv' => '123',
+        ]));
+        $data = $this->request->getData();
 
-        $response = $this->request->setAmount('100')
-            ->setTransactionReference('51-0000000')
-            ->setCurrency('ILS')
-            ->setCredType('1')
-            ->setCcNo('12312312')
-            ->send();
-
-        $this->assertTransaction(
-            $response,
-            '54-0000000',
-            'Transaction approved',
-            '000'
-        );
+        $this->assertEquals('4111111111111111', $data['card_number']);
+        $this->assertEquals(12, $data['expire_month']);
+        $this->assertEquals(2025, $data['expire_year']);
+        $this->assertEquals('123', $data['cvv']);
     }
 
-    public function testRefundTransactionAuthorizedUsingToken(): void
+    public function testRefundWithDescription()
     {
-        $this->setMockHttpResponse('RefundTokenTransaction.txt');
+        $this->request->setDescription('Test Refund');
+        $data = $this->request->getData();
 
-        $response = $this->request
-            ->setAmount('0.01')
-            ->setTransactionReference('25-0000000')
-            ->setTranzilaToken('U99e9abcd81c2ca4444')
-            ->send();
+        $this->assertEquals('Test Refund', $data['items'][0]['name']);
+    }
 
-        $this->assertTransaction(
-            $response,
-            '26-0000000',
-            'Transaction approved',
-            '000',
-            true,
-            false,
-            false,
-            null,
-            'U99e9abcd81c2ca4444'
-        );
+    public function testRefundWithToken(): void
+    {
+        $this->setMockHttpResponse('RefundSuccess.txt');
+
+        // Create a new request instance for token-based refund
+        $tokenRequest = new RefundRequest($this->getHttpClient(), $this->getHttpRequest());
+        $tokenRequest->initialize([
+            'app_key' => 'test_app_key',
+            'secret' => 'test_secret',
+            'terminal_name' => 'test_terminal',
+            'amount' => '5.00',
+            'currency' => 'ILS',
+            'transaction_reference' => '12345',
+            'authorization_number' => '0000000',
+            'token' => 'U99e9abcd81c2ca4444',
+        ]);
+
+        $response = $tokenRequest->send();
+
+        $this->assertTrue($response->isSuccessful());
+        $this->assertEquals('216', $response->getTransactionReference());
+        $this->assertEquals('Success', $response->getMessage());
+        $this->assertEquals('000', $response->getCode());
+    }
+
+    public function testRefundWithCreditCard(): void
+    {
+        $this->setMockHttpResponse('RefundSuccess.txt');
+
+        // Create a new request instance for card-based refund
+        $cardRequest = new RefundRequest($this->getHttpClient(), $this->getHttpRequest());
+        $cardRequest->initialize([
+            'app_key' => 'test_app_key',
+            'secret' => 'test_secret',
+            'terminal_name' => 'test_terminal',
+            'amount' => '10.00',
+            'currency' => 'ILS',
+            'transaction_reference' => '12345',
+            'authorization_number' => '0000000',
+            'card' => new \Omnipay\Common\CreditCard([
+                'number' => '4111111111111111',
+                'expiryMonth' => '12',
+                'expiryYear' => '2025',
+                'cvv' => '123',
+            ]),
+        ]);
+
+        $response = $cardRequest->send();
+
+        $this->assertTrue($response->isSuccessful());
+        $this->assertEquals('216', $response->getTransactionReference());
+        $this->assertEquals('Success', $response->getMessage());
+        $this->assertEquals('000', $response->getCode());
     }
 }
